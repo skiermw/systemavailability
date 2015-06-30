@@ -1,0 +1,279 @@
+// Create PAS
+CREATE (pas:Application {
+			name:'PAS',
+			status: 'UP',
+			system: 'SAY'
+		})
+
+// Create CRM
+CREATE (crm:Application {
+			name:'CRM',
+			status: 'UP',
+			system: 'CRM'
+		})
+// Create Billing
+CREATE (billing:Application {
+			name:'BILLING',
+			status: 'UP',
+			system: 'BILLING'
+		})
+// Create Actuarial
+CREATE (actuarial:Application {
+			name:'ACTUARIAL',
+			status: 'UP',
+			system: 'ACTUARIAL'
+		})
+
+
+// Create Say Website 1
+CREATE (web1:WebServer {
+			ip:'10.10.35.1',
+			name:'WebServer1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+
+// Create Say Application Server 1
+CREATE (app1:AppServer {
+			ip:'10.10.35.2',
+			name:'DCProdAppSrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+
+
+// Create MongoDB Server 1
+CREATE (mongodb1:DBServer{
+			ip:'10.10.35.8',
+			name:'DCProdMongoSrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create MongoDB Server 2
+CREATE (mongodb2:DBServer{
+			ip:'10.10.35.9',
+			name:'DCProdMongoSrv2',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create MongoDB Server 3
+CREATE (mongodb3:DBServer{
+			ip:'10.10.35.10',
+			name:'DCProdMongoSrv3',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create Cassandra DB Server 1
+CREATE (cass1:DBServer{
+			ip:'10.10.35.11',
+			name:'DCProdCassandraSrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create Cassandra Server 2
+CREATE (cass2:DBServer{
+			ip:'10.10.35.12',
+			name:'DCProdCassandraSrv2',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create Cassandra Server 3
+CREATE (cass3:DBServer{
+			ip:'10.10.35.13',
+			name:'DCProdCassandraSrv3',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create ElasticSearch Server 1
+CREATE (elast1:DBServer{
+			ip:'10.10.35.13',
+			name:'DCProdElasticSrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create ElasticSearch Server 2
+CREATE (elast2:DBServer{
+			ip:'10.10.35.13',
+			name:'DCProdElasticSrv2',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create ElasticSearch Server 3
+CREATE (elast3:DBServer{
+			ip:'10.10.35.13',
+			name:'DCProdElasticSrv3',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create RabbitMQ Server 1
+CREATE (rabbit1:QueueServer{
+			ip:'10.10.35.21',
+			name:'DCProdQueueSrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create VMware Cluster 1
+CREATE (cluster1:VMwareCluster{
+			ip:'10.10.40.1',
+			name:'DCCluster1',
+			system: 'INFRASTRUCTURE',
+			status: 'UP'
+		})
+// Create VMware Server 1
+CREATE (vmsrv1:VMwareServer{
+			ip:'10.10.40.1',
+			name:'VMwareSrv1',
+			status: 'UP',
+			system: 'INFRASTRUCTURE',
+			type: 'Hardware'
+		})
+// Create VMware Server 2
+CREATE (vmsrv2:VMwareServer{
+			ip:'10.10.40.2',
+			name:'VMwareSrv2',
+			system: 'INFRASTRUCTURE',
+			status: 'UP',
+			type: 'Hardware'
+		})
+// Create WebSphereMQ server
+CREATE (wsmq1:QueueServer{
+			ip:'10.10.40.2',
+			name:'WebSphereMQ1',
+			status: 'UP'
+		})
+// Create LPAR
+CREATE (lpar1:LPAR{
+			ip:'10.10.40.2',
+			name:'PRODLPAR',
+			system: 'INFRASTRUCTURE',
+			status: 'UP'
+		})
+// Create Mainframe
+CREATE (mf:Mainframe{
+			ip:'10.10.40.1',
+			name:'Mainframe',
+			status: 'UP',
+			system: 'INFRASTRUCTURE',
+			type: 'Hardware'
+		})
+		
+// Create Billing Website 1
+CREATE (billweb1:WebServer {
+			ip:'10.10.35.1',
+			name:'BillWebServer1',
+			status: 'UP',
+			system: 'BILLING',
+			type: 'VM'
+		})
+
+// Create Billing Application Server 1
+CREATE (billapp1:AppServer {
+			ip:'10.10.35.2',
+			name:'BillProdAppSrv1',
+			status: 'UP',
+			system: 'BILLING',
+			type: 'VM'
+		})
+
+
+// Create Billing DB Server 1
+CREATE (billdb1:DBServer{
+			ip:'10.10.35.8',
+			name:'BillProdDBSrv1',
+			status: 'UP',
+			system: 'BILLING',
+			type: 'VM'
+		})
+// Create VMware Billing Cluster 
+CREATE (cluster2:VMwareCluster{
+			ip:'10.10.40.1',
+			name:'BillingCluster1',
+			system: 'INFRASTRUCTURE',
+			status: 'UP'
+		})
+// Create VMware Billing Server 1
+CREATE (billvmsrv1:VMwareServer{
+			ip:'10.10.40.1',
+			name:'BillVMwareSrv1',
+			status: 'UP',
+			system: 'INFRASTRUCTURE',
+			type: 'Hardware'
+		})
+// Create VMware Billing Server 2
+CREATE (billvmsrv2:VMwareServer{
+			ip:'10.10.40.2',
+			name:'BillVMwareSrv2',
+			system: 'INFRASTRUCTURE',
+			status: 'UP',
+			type: 'Hardware'
+		})		
+// Setup Billing 
+CREATE (billing)-[:NEEDS]->(billweb1)
+CREATE (billweb1)-[:NEEDS]->(billapp1)
+CREATE (billapp1)-[:NEEDS]->(billdb1)
+CREATE (billweb1)-[:NEEDS]->(cluster2)
+CREATE (billapp1)-[:NEEDS]->(cluster2)
+CREATE (billdb1)-[:NEEDS]->(cluster2)
+CREATE (cluster2)-[:NEEDS]->(billvmsrv1)
+CREATE (cluster2)-[:NEEDS]->(billvmsrv2)
+
+// Connect PAS to web1
+CREATE (pas)-[:NEEDS]->(web1)
+
+// Connect web 1 app1
+CREATE (web1)-[:NEEDS]->(app1)
+
+// Connect app1 to databases and queue srv
+CREATE (app1)-[:NEEDS]->(mongodb1)
+CREATE (app1)-[:NEEDS]->(mongodb2)
+CREATE (app1)-[:NEEDS]->(mongodb3)
+CREATE (app1)-[:NEEDS]->(cass1)
+CREATE (app1)-[:NEEDS]->(cass2)
+CREATE (app1)-[:NEEDS]->(cass3)
+CREATE (app1)-[:NEEDS]->(elast1)
+CREATE (app1)-[:NEEDS]->(elast2)
+CREATE (app1)-[:NEEDS]->(elast3)
+CREATE (app1)-[:CONNECTS_TO]->(rabbit1)
+CREATE (app1)-[:NEEDS]->(billing)
+
+// Connect VMs to VMware cluster
+CREATE (web1)-[:NEEDS]->(cluster1)
+CREATE (app1)-[:NEEDS]->(cluster1)
+CREATE (mongodb1)-[:NEEDS]->(cluster1)
+CREATE (mongodb2)-[:NEEDS]->(cluster1)
+CREATE (mongodb3)-[:NEEDS]->(cluster1)
+CREATE (cass1)-[:NEEDS]->(cluster1)
+CREATE (cass2)-[:NEEDS]->(cluster1)
+CREATE (cass3)-[:NEEDS]->(cluster1)
+CREATE (rabbit1)-[:NEEDS]->(cluster1)
+CREATE (elast1)-[:NEEDS]->(cluster1)
+CREATE (elast2)-[:NEEDS]->(cluster1)
+CREATE (elast3)-[:NEEDS]->(cluster1)
+
+// Connect RabbitMQ to other applications
+CREATE (rabbit1)-[:CONNECTS_TO]->(crm)
+
+// Connect VMware cluster to hardware servers
+CREATE (cluster1)-[:NEEDS]->(vmsrv1)
+CREATE (cluster1)-[:NEEDS]->(vmsrv2)
+
+// Connect WebSphereMQ 
+CREATE (rabbit1)-[:CONNECTS_TO]->(wsmq1)
+CREATE (wsmq1)-[:NEEDS]->(lpar1)
+CREATE (lpar1)-[:NEEDS]->(mf)
+
+// Connect Actuarial
+CREATE (actuarial)-[:NEEDS]->(lpar1)
+CREATE (actuarial)-[:NEEDS]->(wsmq1)
