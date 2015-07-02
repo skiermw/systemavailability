@@ -6,4 +6,4 @@ WITH		dependency
 MATCH 		p=(resource)-[:NEEDS*]->(dependency)
 WHERE		resource.name = "PAS"
 RETURN		"[" + head(nodes(p)).name + "]" +
-			reduce(s = "", n in tail(nodes(p)) | s + " -> " + "[" + n.name + "]") as Chain
+			reduce(s = "", n in tail(nodes(p)) | s + " -> " + "[" + n.name + ":" + n.status "]") as Chain
