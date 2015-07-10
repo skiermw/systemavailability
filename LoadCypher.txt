@@ -1,50 +1,84 @@
 CREATE CONSTRAINT ON (e:Environment) ASSERT e.name IS UNIQUE
+CREATE CONSTRAINT ON (a:Domain) ASSERT a.name IS UNIQUE
+CREATE CONSTRAINT ON (ap:AppServer) ASSERT ap.name IS UNIQUE
+CREATE CONSTRAINT ON (w:WebServer) ASSERT w.name IS UNIQUE
+CREATE CONSTRAINT ON (db:DBServer) ASSERT db.name IS UNIQUE
+CREATE CONSTRAINT ON (mf:Mainframe) ASSERT mf.name IS UNIQUE
+CREATE CONSTRAINT ON (vmc:VMwareCluster) ASSERT vmc.name IS UNIQUE
+CREATE CONSTRAINT ON (vms:VMwareServer) ASSERT vms.name IS UNIQUE
+CREATE CONSTRAINT ON (q:Queue) ASSERT q.name IS UNIQUE
+CREATE CONSTRAINT ON (prg:Program) ASSERT prg.name IS UNIQUE
+CREATE CONSTRAINT ON (l:LPAR) ASSERT l.name IS UNIQUE;
 
 // Create Production environment
 CREATE (prod:Environment {name:"PROD"})
 
 // Create PAS
-CREATE (pas:Application {
+CREATE (pas:Domain {
 			name:'PAS',
 			status: 'UP',
 			system: 'PAS'
 		})
 
 // Create CRM
-CREATE (crm:Application {
+CREATE (crm:Domain {
 			name:'CRM',
 			status: 'UP',
 			system: 'CRM'
 		})
 // Create Billing
-CREATE (billing:Application {
-			name:'BILLING',
+CREATE (billing:Domain {
+			name:'Billing',
 			status: 'UP',
 			system: 'BILLING'
 		})
 // Create Actuarial
-CREATE (actuarial:Application {
-			name:'ACTUARIAL',
+CREATE (actuarial:Domain {
+			name:'Actuarial',
 			status: 'UP',
 			system: 'ACTUARIAL'
 		})
 // Create Ratabase
-CREATE (ratabase:Application {
-			name:'RATABASE',
+CREATE (ratabase:Domain {
+			name:'Ratabase',
 			status: 'UP',
 			system: 'RATABASE'
 		})
 // Create Marketing Automation
-CREATE (marketing:Application {
-			name:'MARKETINGAUTOMATION',
+CREATE (marketing:Domain {
+			name:'MarketingAutomation',
 			status: 'UP',
 			system: 'MARKETINGAUTOMATION'
 		})
 // Create Document Management
-CREATE (doc:Application {
-			name:'DOCMGMT',
+CREATE (doc:Domain {
+			name:'DocumentMGMT',
 			status: 'UP',
 			system: 'DOCUMENTMANAGEMENT'
+		})
+// Create User Management
+CREATE (um:Domain {
+			name:'UserMGMT',
+			status: 'UP',
+			system: 'USERMGMNT'
+		})
+// Create Claims
+CREATE (claims:Domain {
+			name:'Claims',
+			status: 'UP',
+			system: 'Claims'
+		})
+// Create BI
+CREATE (bi:Domain {
+			name:'BI',
+			status: 'UP',
+			system: 'BI'
+		})
+// Create Reporting
+CREATE (reporting:Domain {
+			name:'Reporting',
+			status: 'UP',
+			system: 'Reporting'
 		})
 // Create Say Website 1
 CREATE (web1:WebServer {
@@ -276,7 +310,7 @@ CREATE (ratedb2:DBServer{
 // Create VMware Ratabase Cluster 
 CREATE (cluster3:VMwareCluster{
 			ip:'10.10.40.1',
-			name:'BillingCluster1',
+			name:'RatabaseCluster1',
 			system: 'INFRASTRUCTURE',
 			status: 'UP'
 		})
@@ -296,6 +330,144 @@ CREATE (ratevmsrv2:VMwareServer{
 			status: 'UP',
 			type: 'Hardware'
 		})			
+// Create User Management 
+CREATE (umgw1:AppServer{
+			ip:'10.10.40.2',
+			name:'SAYPRODGWSRV1',
+			system: 'USERMGMNT',
+			status: 'UP',
+			type: 'VM'
+		})			
+// Create User Management 
+CREATE (umauth:AppServer{
+			ip:'10.10.40.2',
+			name:'SAYPRODAUTHSRV1',
+			system: 'USERMGMNT',
+			status: 'UP',
+			type: 'VM'
+		})
+// Create User Management 
+CREATE (umdisc:AppServer{
+			ip:'10.10.40.2',
+			name:'SAYPRODDISCSRV1',
+			system: 'USERMGMNT',
+			status: 'UP',
+			type: 'VM'
+		})
+// Create User Management DB Server 
+CREATE (umdb:DBServer{
+			ip:'10.10.35.8',
+			name:'SAYUMPRODDBSRV1',
+			status: 'UP',
+			system: 'USERMGMNT',
+			type: 'VM'
+		})		
+// Create DevOps
+CREATE (chef:DevOpsServer{
+			ip:'10.10.35.8',
+			name:'ChefServer',
+			status: 'UP',
+			system: 'DEVOPS',
+			type: 'VM'
+		})
+// Create DevOps
+CREATE (vag:DevOpsServer{
+			ip:'10.10.35.8',
+			name:'VagrantServer',
+			status: 'UP',
+			system: 'DEVOPS',
+			type: 'VM'
+		})
+// Create DevOps
+CREATE (knife:DevOpsServer{
+			ip:'10.10.35.8',
+			name:'KnifeServer',
+			status: 'UP',
+			system: 'DEVOPS',
+			type: 'VM'
+		})
+// Create DevOps
+CREATE (build:DevOpsServer{
+			ip:'10.10.35.8',
+			name:'BuildServer',
+			status: 'UP',
+			system: 'DEVOPS',
+			type: 'VM'
+		})
+// Create DevOps
+CREATE (repo:DevOpsServer{
+			ip:'10.10.35.8',
+			name:'RepoServer',
+			status: 'UP',
+			system: 'DEVOPS',
+			type: 'VM'
+		})
+// Create DevOps
+CREATE (log:DevOpsServer{
+			ip:'10.10.35.8',
+			name:'LogServer',
+			status: 'UP',
+			system: 'DEVOPS',
+			type: 'VM'
+		})
+// Create Queues
+CREATE (actq:Queue{
+			name:'actuarial',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'RabbitMQ'
+		})
+CREATE (biq:Queue{
+			name:'BI',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'RabbitMQ'
+		})
+CREATE (crmq:Queue{
+			name:'CRM',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'RabbitMQ'
+		})
+CREATE (docmanq:Queue{
+			name:'docman',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'RabbitMQ'
+		})
+CREATE (actqws:Queue{
+			name:'actqws',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'WebSphereMQ'
+		})
+CREATE (bridgeprg:Program{
+			name:'mqbridge',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'Java'
+		})
+// Setup DevOps
+CREATE (pas)-[:NEEDS]->(chef)
+CREATE (pas)-[:NEEDS]->(vag)
+CREATE (pas)-[:NEEDS]->(knife)
+CREATE (pas)-[:NEEDS]->(build)
+CREATE (pas)-[:NEEDS]->(repo)
+CREATE (pas)-[:NEEDS]->(log)
+CREATE (chef)-[:NEEDS]->(cluster1)
+CREATE (vag)-[:NEEDS]->(cluster1)
+CREATE (knife)-[:NEEDS]->(cluster1)
+CREATE (build)-[:NEEDS]->(cluster1)
+CREATE (log)-[:NEEDS]->(cluster1)
+// Setup User Management
+CREATE (um)-[:NEEDS]->(umgw1)
+CREATE (umgw1)-[:NEEDS]->(umauth)
+CREATE (umauth)-[:NEEDS]->(umdb)
+CREATE (umgw1)-[:NEEDS]->(umdisc)
+CREATE (umgw1)-[:NEEDS]->(cluster1)
+CREATE (umauth)-[:NEEDS]->(cluster1)
+CREATE (umdb)-[:NEEDS]->(cluster1)
+CREATE (umdisc)-[:NEEDS]->(cluster1)
 // Setup Ratabase
 CREATE (ratabase)-[:NEEDS]->(rate1)
 CREATE (ratabase)-[:NEEDS]->(rate2)
@@ -328,6 +500,12 @@ CREATE (web1)-[:NEEDS]->(app1)
 // Connect CRM to Marketing Automation
 CREATE (crm)-[:CONNECTS_TO]->(marketing)
 
+// Connect PAS to Claims
+CREATE (pas)-[:CONNECTS_TO]->(claims)
+// Connect PAS to BI
+CREATE (pas)-[:CONNECTS_TO]->(bi)
+// Connect PAS to Reporting
+CREATE (pas)-[:CONNECTS_TO]->(reporting)
 // Connect app1 to databases and queue srv
 CREATE (app1)-[:NEEDS]->(mongodb1)
 CREATE (app1)-[:NEEDS]->(mongodb2)
@@ -356,18 +534,25 @@ CREATE (elast1)-[:NEEDS]->(cluster1)
 CREATE (elast2)-[:NEEDS]->(cluster1)
 CREATE (elast3)-[:NEEDS]->(cluster1)
 
-// Connect RabbitMQ to other applications
-CREATE (rabbit1)-[:CONNECTS_TO]->(crm)
-
+// Connect RabbitMQ to queues
+CREATE (rabbit1)-[:CONNECTS_TO]->(actq)
+CREATE (rabbit1)-[:CONNECTS_TO]->(biq)
+CREATE (rabbit1)-[:CONNECTS_TO]->(crmq)
+CREATE (rabbit1)-[:CONNECTS_TO]->(docmanq)
+CREATE (biq)-[:CONNECTS_TO]->(bi)
+CREATE (crmq)-[:CONNECTS_TO]->(crm)
+CREATE (docmanq)-[:CONNECTS_TO]->(doc)
+CREATE (actq)-[:CONNECTS_TO]->(bridgeprg)
 // Connect VMware cluster to hardware servers
 CREATE (cluster1)-[:NEEDS]->(vmsrv1)
 CREATE (cluster1)-[:NEEDS]->(vmsrv2)
 
 // Connect WebSphereMQ 
-CREATE (rabbit1)-[:CONNECTS_TO]->(wsmq1)
+CREATE (bridgeprg)-[:CONNECTS_TO]->(wsmq1)
+CREATE (wsmq1)-[:CONNECTS_TO]->(actqws)
 CREATE (wsmq1)-[:NEEDS]->(lpar1)
 CREATE (lpar1)-[:NEEDS]->(mf)
 
 // Connect Actuarial
 CREATE (actuarial)-[:NEEDS]->(lpar1)
-CREATE (actuarial)-[:NEEDS]->(wsmq1)
+CREATE (actqws)-[:CONNECTS_TO]->(actuarial)
