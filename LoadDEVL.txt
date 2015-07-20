@@ -1,25 +1,129 @@
-
+// Load the DEVL environment
 
 // Create Production environment
-CREATE (prod:Environment {name:"PROD"})
+CREATE (devl:Environment {name:"DEVL"})
 
-
-// Create Say Website 1
-CREATE (web1:VM {
-			ip:'10.10.35.1',
-			name:'WebServer1',
+// Create ElasticSearch Server 1
+CREATE (elast1:VM{
+			ip:'10.4.4.71',
+			name:'dcdevelasticsrv1',
 			status: 'UP',
 			system: 'PAS',
-			type: 'WebServer'
+			type: 'DBServer'
+		})
+// Create ElasticSearch Server 2
+CREATE (elast2:VM{
+			ip:'10.4.4.72',
+			name:'dcdeelasticsrv2',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create ElasticSearch Server 3
+CREATE (elast3:VM{
+			ip:'10.4.4.73',
+			name:'dcdeelasticsrv3',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create MongoDB Server 1
+CREATE (mongodb1:VM{
+			ip:'10.10.35.11',
+			name:'dcdevmongosrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create MongoDB Server 2
+CREATE (mongodb2:VM{
+			ip:'10.10.35.9',
+			name:'dcdevmongosrv2',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create MongoDB Server 3
+CREATE (mongodb3:VM{
+			ip:'10.10.35.13',
+			name:'dcdevmongosrv3',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create Cassandra DB Server 1
+CREATE (cass1:VM{
+			ip:'10.4.4.31',
+			name:'dcdevcassandrasrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create Cassandra DB Server 2
+CREATE (cass2:VM{
+			ip:'10.4.4.32',
+			name:'dcdevcassandrasrv2',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create Cassandra DB Server 3
+CREATE (cass3:VM{
+			ip:'10.4.4.33',
+			name:'dcdevcassandrasrv3',
+			status: 'UP',
+			system: 'PAS',
+			type: 'DBServer'
+		})
+// Create Time Server 
+CREATE (time:TimeServer{
+			ip:'10.4.4.215',
+			name:'dcdevtimesrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
 		})
 
+// Create Billing App Server 
+CREATE (billapp:AppServer{
+			ip:'10.4.4.1',
+			name:'billdevappsrv1',
+			status: 'UP',
+			system: 'Billing',
+			type: 'VM'
+		})
+// Create PAS App Server 
+CREATE (PASapp1:AppServer{
+			ip:'10.4.4.62',
+			name:'dcdevappsrv1',
+			status: 'UP',
+			system: 'PAS',
+			type: 'VM'
+		})
+// Create Say Discovery Server 
+CREATE (disc:AppServer{
+			ip:'10.4.4.2',
+			name:'saydevdiscoverysrv1',
+			status: 'UP',
+			system: 'Infrastructure',
+			type: 'VM'
+		})
+// Create User Management DB Server 
+CREATE (umdb1:VM{
+			ip:'10.4.4.172',
+			name:'sayumdevdbsrv1',
+			status: 'UP',
+			system: 'UserMgmnt',
+			type: 'DBServer'
+		})
+// *************************************
 // Create Say Application Server 1
-CREATE (app1:VM {
+CREATE (app1:AppServer {
 			ip:'10.10.35.2',
 			name:'DCProdAppSrv1',
 			status: 'UP',
 			system: 'PAS',
-			type: 'AppServer'
+			type: 'VM'
 		})
 
 
@@ -29,7 +133,7 @@ CREATE (mongodb1:VM{
 			name:'DCProdMongoSrv1',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create MongoDB Server 2
 CREATE (mongodb2:VM{
@@ -37,7 +141,7 @@ CREATE (mongodb2:VM{
 			name:'DCProdMongoSrv2',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create MongoDB Server 3
 CREATE (mongodb3:VM{
@@ -45,7 +149,7 @@ CREATE (mongodb3:VM{
 			name:'DCProdMongoSrv3',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create Cassandra DB Server 1
 CREATE (cass1:VM{
@@ -53,7 +157,7 @@ CREATE (cass1:VM{
 			name:'DCProdCassandraSrv1',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create Cassandra Server 2
 CREATE (cass2:VM{
@@ -61,7 +165,7 @@ CREATE (cass2:VM{
 			name:'DCProdCassandraSrv2',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create Cassandra Server 3
 CREATE (cass3:VM{
@@ -69,7 +173,7 @@ CREATE (cass3:VM{
 			name:'DCProdCassandraSrv3',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create ElasticSearch Server 1
 CREATE (elast1:VM{
@@ -77,7 +181,7 @@ CREATE (elast1:VM{
 			name:'DCProdElasticSrv1',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create ElasticSearch Server 2
 CREATE (elast2:VM{
@@ -85,7 +189,7 @@ CREATE (elast2:VM{
 			name:'DCProdElasticSrv2',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create ElasticSearch Server 3
 CREATE (elast3:VM{
@@ -93,15 +197,15 @@ CREATE (elast3:VM{
 			name:'DCProdElasticSrv3',
 			status: 'UP',
 			system: 'PAS',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create RabbitMQ Server 1
-CREATE (rabbit1:VM{
+CREATE (rabbit1:QueueServer{
 			ip:'10.10.35.21',
 			name:'DCProdQueueSrv1',
 			status: 'UP',
 			system: 'PAS',
-			type: 'QueueServer'
+			type: 'VM'
 		})
 // Create VMware Cluster 1
 CREATE (cluster1:VMwareCluster{
@@ -127,21 +231,20 @@ CREATE (vmsrv2:VMwareServer{
 			type: 'Hardware'
 		})
 // Create WebSphereMQ server
-CREATE (wsmq1:MF{
+CREATE (wsmq1:QueueServer{
 			ip:'10.10.40.2',
 			name:'WebSphereMQ1',
-			status: 'UP',
-			type: 'QueueServer'
+			status: 'UP'
 		})
 // Create LPAR
-CREATE (lpar1:MF{
+CREATE (lpar1:LPAR{
 			ip:'10.10.40.2',
 			name:'PRODLPAR',
 			system: 'INFRASTRUCTURE',
 			status: 'UP'
 		})
 // Create Mainframe
-CREATE (mf:MF{
+CREATE (mf:Mainframe{
 			ip:'10.10.40.1',
 			name:'Mainframe',
 			status: 'UP',
@@ -150,21 +253,21 @@ CREATE (mf:MF{
 		})
 		
 // Create Billing Website 1
-CREATE (billweb1:VM {
+CREATE (billweb1:WebServer {
 			ip:'10.10.35.1',
 			name:'BillWebServer1',
 			status: 'UP',
 			system: 'BILLING',
-			type: 'WebServer'
+			type: 'VM'
 		})
 
 // Create Billing Application Server 1
-CREATE (billapp1:VM {
+CREATE (billapp1:AppServer {
 			ip:'10.10.35.2',
 			name:'BillProdAppSrv1',
 			status: 'UP',
 			system: 'BILLING',
-			type: 'AppServer'
+			type: 'VM'
 		})
 
 
@@ -174,7 +277,7 @@ CREATE (billdb1:VM{
 			name:'BillProdDBSrv1',
 			status: 'UP',
 			system: 'BILLING',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create VMware Billing Cluster 
 CREATE (cluster2:VMwareCluster{
@@ -184,7 +287,7 @@ CREATE (cluster2:VMwareCluster{
 			status: 'UP'
 		})
 // Create VMware Billing Server 1
-CREATE (billvmsrv1:Server{
+CREATE (billvmsrv1:VMwareServer{
 			ip:'10.10.40.1',
 			name:'BillVMwareSrv1',
 			status: 'UP',
@@ -192,7 +295,7 @@ CREATE (billvmsrv1:Server{
 			type: 'Hardware'
 		})
 // Create VMware Billing Server 2
-CREATE (billvmsrv2:Server{
+CREATE (billvmsrv2:VMwareServer{
 			ip:'10.10.40.2',
 			name:'BillVMwareSrv2',
 			system: 'INFRASTRUCTURE',
@@ -200,20 +303,20 @@ CREATE (billvmsrv2:Server{
 			type: 'Hardware'
 		})	
 // Create Ratabase Server 1
-CREATE (rate1:VM {
+CREATE (rate1:AppServer {
 			ip:'10.10.35.2',
 			name:'RatabaseSrv1',
 			status: 'UP',
 			system: 'Ratabase',
-			type: 'AppServer'
+			type: 'VM'
 		})
 // Create Ratabase Server 2
-CREATE (rate2:VM {
+CREATE (rate2:AppServer {
 			ip:'10.10.35.2',
 			name:'RatabaseSrv2',
 			status: 'UP',
 			system: 'Ratabase',
-			type: 'AppServer'
+			type: 'VM'
 		})
 
 // Create Ratabase DB Server 1
@@ -222,7 +325,7 @@ CREATE (ratedb1:VM{
 			name:'RatabaseDBSrv1',
 			status: 'UP',
 			system: 'Ratabase',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create Ratabase DB Server 2
 CREATE (ratedb2:VM{
@@ -230,7 +333,7 @@ CREATE (ratedb2:VM{
 			name:'RatabaseDBSrv2',
 			status: 'UP',
 			system: 'Ratabase',
-			type: 'DBServer'
+			type: 'VM'
 		})
 // Create VMware Ratabase Cluster 
 CREATE (cluster3:VMwareCluster{
@@ -240,7 +343,7 @@ CREATE (cluster3:VMwareCluster{
 			status: 'UP'
 		})
 // Create VMware Ratabase Server 1
-CREATE (ratevmsrv1:Server{
+CREATE (ratevmsrv1:VMwareServer{
 			ip:'10.10.40.1',
 			name:'RatabaseVMwareSrv1',
 			status: 'UP',
@@ -248,7 +351,7 @@ CREATE (ratevmsrv1:Server{
 			type: 'Hardware'
 		})
 // Create VMware Ratabase Server 2
-CREATE (ratevmsrv2:Server{
+CREATE (ratevmsrv2:VMwareServer{
 			ip:'10.10.40.2',
 			name:'RatabaseVMwareSrv2',
 			system: 'INFRASTRUCTURE',
@@ -256,28 +359,28 @@ CREATE (ratevmsrv2:Server{
 			type: 'Hardware'
 		})			
 // Create User Management 
-CREATE (umgw1:VM{
+CREATE (umgw1:AppServer{
 			ip:'10.10.40.2',
 			name:'SAYPRODGWSRV1',
 			system: 'USERMGMNT',
 			status: 'UP',
-			type: 'Gateway'
+			type: 'VM'
 		})			
 // Create User Management 
-CREATE (umauth:VM{
+CREATE (umauth:AppServer{
 			ip:'10.10.40.2',
 			name:'SAYPRODAUTHSRV1',
 			system: 'USERMGMNT',
 			status: 'UP',
-			type: 'Authorization'
+			type: 'VM'
 		})
 // Create User Management 
-CREATE (umdisc:VM{
+CREATE (umdisc:AppServer{
 			ip:'10.10.40.2',
 			name:'SAYPRODDISCSRV1',
 			system: 'USERMGMNT',
 			status: 'UP',
-			type: 'Discovery'
+			type: 'VM'
 		})
 // Create User Management DB Server 
 CREATE (umdb:VM{
@@ -285,55 +388,55 @@ CREATE (umdb:VM{
 			name:'SAYUMPRODDBSRV1',
 			status: 'UP',
 			system: 'USERMGMNT',
-			type: 'DBServer'
+			type: 'VM'
 		})		
 // Create DevOps
-CREATE (chef:VM{
+CREATE (chef:DevOpsServer{
 			ip:'10.10.35.8',
 			name:'ChefServer',
 			status: 'UP',
 			system: 'DEVOPS',
-			type: 'DevOpsServer'
+			type: 'VM'
 		})
 // Create DevOps
-CREATE (vag:VM{
+CREATE (vag:DevOpsServer{
 			ip:'10.10.35.8',
 			name:'VagrantServer',
 			status: 'UP',
 			system: 'DEVOPS',
-			type: 'DevOpsServer'
+			type: 'VM'
 		})
 // Create DevOps
-CREATE (knife:VM{
+CREATE (knife:DevOpsServer{
 			ip:'10.10.35.8',
 			name:'KnifeServer',
 			status: 'UP',
 			system: 'DEVOPS',
-			type: 'DevOpsServer'
+			type: 'VM'
 		})
 // Create DevOps
-CREATE (build:VM{
+CREATE (build:DevOpsServer{
 			ip:'10.10.35.8',
 			name:'BuildServer',
 			status: 'UP',
 			system: 'DEVOPS',
-			type: 'DevOpsServer'
+			type: 'VM'
 		})
 // Create DevOps
-CREATE (repo:VM{
+CREATE (repo:DevOpsServer{
 			ip:'10.10.35.8',
 			name:'RepoServer',
 			status: 'UP',
 			system: 'DEVOPS',
-			type: 'DevOpsServer'
+			type: 'VM'
 		})
 // Create DevOps
-CREATE (log:VM{
+CREATE (log:DevOpsServer{
 			ip:'10.10.35.8',
 			name:'LogServer',
 			status: 'UP',
 			system: 'DEVOPS',
-			type: 'DevOpsServer'
+			type: 'VM'
 		})
 // Create Queues
 CREATE (actq:Queue{
