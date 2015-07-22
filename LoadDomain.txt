@@ -1,88 +1,122 @@
-// Create PAS
-CREATE (pas:Domain {
+// MERGE PAS
+MERGE (pas:Domain {
 			name:'PAS',
 			status: 'UP',
 			system: 'PAS'
 		})
 
-// Create CRM
-CREATE (crm:Domain {
+// MERGE CRM
+MERGE (crm:Domain {
 			name:'CRM',
 			status: 'UP',
 			system: 'CRM'
 		})
-// Create Billing
-CREATE (billing:Domain {
+// MERGE Client
+MERGE (client:Domain {
+			name:'Client',
+			status: 'UP',
+			system: 'Client'
+		})
+// MERGE Billing
+MERGE (billing:Domain {
 			name:'Billing',
 			status: 'UP',
 			system: 'BILLING'
 		})
-// Create Actuarial
-CREATE (actuarial:Domain {
+// MERGE Actuarial
+MERGE (actuarial:Domain {
 			name:'Actuarial',
 			status: 'UP',
 			system: 'ACTUARIAL'
 		})
-// Create Ratabase
-CREATE (ratabase:Domain {
+// MERGE Ratabase
+MERGE (ratabase:Domain {
 			name:'Ratabase',
 			status: 'UP',
 			system: 'RATABASE'
 		})
-// Create Marketing Automation
-CREATE (marketing:Domain {
+// MERGE Marketing Automation
+MERGE (marketing:Domain {
 			name:'MarketingAutomation',
 			status: 'UP',
 			system: 'MARKETINGAUTOMATION'
 		})
-// Create Document Management
-CREATE (doc:Domain {
+// MERGE Document Management
+MERGE (doc:Domain {
 			name:'DocumentMGMT',
 			status: 'UP',
 			system: 'DOCUMENTMANAGEMENT'
 		})
-// Create User Management
-CREATE (um:Domain {
+// MERGE User Management
+MERGE (um:Domain {
 			name:'UserMGMT',
 			status: 'UP',
 			system: 'USERMGMNT'
 		})
-// Create Claims
-CREATE (claims:Domain {
+// MERGE Claims
+MERGE (claims:Domain {
 			name:'Claims',
 			status: 'UP',
 			system: 'Claims'
 		})
-// Create BI
-CREATE (bi:Domain {
+// MERGE BI
+MERGE (bi:Domain {
 			name:'BI',
 			status: 'UP',
 			system: 'BI'
 		})
-// Create Reporting
-CREATE (reporting:Domain {
+// MERGE Reporting
+MERGE (reporting:Domain {
 			name:'Reporting',
 			status: 'UP',
 			system: 'Reporting'
 		})
-		
+// MERGE Front End
+MERGE (web:Domain {
+			name:'WebFrontEnd',
+			status: 'UP',
+			system: 'WebFrontEnd'
+		})
+				
 // Connect CRM to Marketing Automation
-CREATE (crm)-[:CONNECTS_TO]->(marketing)
+MERGE (crm)-[:CONNECTS_TO]->(marketing)
 // Connect PAS to Ratabase
-CREATE (pass)-[:NEEDS]->(ratabase)
+MERGE (pas)-[:NEEDS]->(ratabase)
 // Connect PAS to Claims
-CREATE (pas)-[:CONNECTS_TO]->(claims)
+MERGE (pas)-[:CONNECTS_TO]->(claims)
 // Connect PAS to BI
-CREATE (pas)-[:CONNECTS_TO]->(bi)
+MERGE (pas)-[:CONNECTS_TO]->(bi)
 // Connect PAS to Reporting
-CREATE (pas)-[:CONNECTS_TO]->(reporting)
+MERGE (pas)-[:CONNECTS_TO]->(reporting)
 // Connect PAS to CRM
-CREATE (pas)-[:CONNECTS_TO]->(crm)
+MERGE (pas)-[:CONNECTS_TO]->(crm)
 // Connect PAS to Actuarial
-CREATE (pas)-[:CONNECTS_TO]->(actuarial)
+MERGE (pas)-[:CONNECTS_TO]->(actuarial)
 // Connect PAS to Billing
-CREATE (pas)-[:NEEDS]->(billing)
+MERGE (pas)-[:NEEDS]->(billing)
 // Connect PAS to User Mgmnt
-CREATE (pas)-[:NEEDS]->(um)
+MERGE (pas)-[:NEEDS]->(um)
 // Connect PAS to Document Mgmnt
-CREATE (pas)-[:NEEDS]->(doc)
+MERGE (pas)-[:NEEDS]->(doc)
+// Connect Doc Mgmnt to Marketing Automation
+MERGE (doc)-[:CONNECTS_TO]->(marketing)
+// Connect Claims to Document Mgmnt
+MERGE (claims)-[:NEEDS]->(doc)
+// Connect Billing to Document Mgmnt
+MERGE (billing)-[:NEEDS]->(doc)
+// Connect CRM to Document Mgmnt
+MERGE (crm)-[:NEEDS]->(doc)
+// Connect Frontend to Pol Admin
+MERGE (web)-[:NEEDS]->(pas)
+// Connect Frontend to Document Mgmnt
+MERGE (web)-[:NEEDS]->(doc)
+// Connect Frontend to Billing
+MERGE (web)-[:NEEDS]->(billing)
+// Connect Frontend to Client
+MERGE (web)-[:NEEDS]->(client)
+// Connect Pol Admin to Client
+MERGE (pas)-[:NEEDS]->(client)
+// Connect Pol Admin to Client
+MERGE (billing)-[:NEEDS]->(client)
+// Connect CRM to client
+MERGE (crm)-[:NEEDS]->(client)

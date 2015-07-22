@@ -56,6 +56,8 @@ def GetArgs():
 
    
 def GetSystem(name):
+   #print('getallvmsEnviron.py - Parsing VM Name')
+   
    dc = 'dc'
    say = 'say'
    say_um = 'sayum'
@@ -66,10 +68,10 @@ def GetSystem(name):
       system = 'PAS'
       environ = name[2:6]
    elif name[:5]==say_um:
-      system = 'UseMgmnt'
+      system = 'UserMgmnt'
       environ = name[5:9]
    elif name[:3]==say:
-      system = 'UseMgmnt'
+      system = 'UserMgmnt'
       environ = name[3:7]
    elif name[:4]==billing:
       system = 'Billing'
@@ -84,6 +86,7 @@ def GetSystem(name):
    if environ not in ['devl', 'prod', 'demo', 'test']:
       environ = 'UNKNOWN'
       
+   
    return system, environ
 
    
@@ -125,6 +128,7 @@ def PrintVmInfo(vm, depth=1):
    #print("")
 
 def WriteVmInfo(vm, depth=1):
+   #print('getallvmsEnviron.py - Writing VMs to Graph')
    """
    Print information for a particular virtual machine or recurse into a folder
     with depth protection
@@ -189,6 +193,7 @@ def WriteVmInfo(vm, depth=1):
    vm_node.push()
                                       
 def WriteQueueInfo(qmgr_node, queue, routing_key):
+   #print('getallvmsEnviron.py - Writing Queue Info')
    env_rel = graph.match(start_node=qmgr_node, rel_type="IS_IN")
    for rel in env_rel:
       env_node = rel.end_node
@@ -200,7 +205,8 @@ def WriteQueueInfo(qmgr_node, queue, routing_key):
 
 
 def SetupQueues(qmgr_node):
-   
+   #q_name = qmgr_node['name']
+   print('getallvmsEnviron.py - Reading Queue Manager %s' % qmgr_node['name'])
    url = 'http://%s:15672/api/exchanges/%%2f/direct_channel/bindings/source' % qmgr_node['name']
    username = 'admin'
    password = 'shelter1'
@@ -230,6 +236,7 @@ def SetupQueues(qmgr_node):
       
 
 def ReadVMs():
+   print('getallvmsEnviron.py - Reading VMs from VMware')
    url='VCPRODSRV1'
    username='tsojmw'
    password='hyenas21'
@@ -263,7 +270,7 @@ def ReadVMs():
       return -1
 
    atexit.register(Disconnect, si)
-
+   
    content = si.RetrieveContent()
    for child in content.rootFolder.childEntity:
       if hasattr(child, 'vmFolder'):
@@ -271,30 +278,39 @@ def ReadVMs():
                   vmFolder = datacenter.vmFolder
                   vmList = vmFolder.childEntity
                   for vm in vmList:
+                     
                      WriteVmInfo(vm)
+
+   
    return 0
 
 def WriteMFQueueInfo():
+   print('getallvmsEnviron.py - Writing MF Queue Info')
    # this is a temporary section until we can read the bridge program's settings
    #   Setup mainframe nodes and relationships
    #  (bridge program)-[runs on]-(rabbit queue mgr)
    #  (bridge program)-[connects]-(WS queue mgr)
    #  (WS queue mgr)-[connects]-(WS queue)
    #  (bridge program)-[reads]-(rabbit queue)
-
+   
+   # setup Mainframe node
+   mf_node = graph.merge_one("Mainframe", "name", "Mainframe")
+   
    # DEVL 
    env_node = graph.merge_one("Environment", "name", "DEVL")
    # note one per bridged WS Queue
    queue_node = graph.merge_one("Queue", "name", "DEV_DIRECT.BACKOFFICE.PREMIUM")
    queue_node['type']= 'WSMQ'
    queue_node.push()
-   
    results = graph.create_unique(Relationship(queue_node, "IS_IN", env_node))
-   queue_srv_node = graph.merge_one("MF", "name", "MQD1")
+   results = graph.create_unique(Relationship(queue_node, "RUNS_ON", mf_node))
+   
+   queue_srv_node = graph.merge_one("QServer", "name", "MQD1")
    queue_srv_node['type']= 'WSMQ'
    queue_srv_node.push()
-   
    results = graph.create_unique(Relationship(queue_srv_node, "IS_IN", env_node))
+   results = graph.create_unique(Relationship(queue_srv_node, "RUNS_ON", mf_node))
+   
    bridge_node = graph.merge_one("Program", "name", "DEV_Act_Bridge")
    results = graph.create_unique(Relationship(bridge_node, "IS_IN", env_node))
    rabbit_node = graph.merge_one("VM", "name", "dcdevqueuesrv1")
@@ -314,11 +330,14 @@ def WriteMFQueueInfo():
    queue_node.push()
    
    results = graph.create_unique(Relationship(queue_node, "IS_IN", env_node))
-   queue_srv_node = graph.merge_one("MF", "name", "MQT1")
+   results = graph.create_unique(Relationship(queue_node, "RUNS_ON", mf_node))
+   queue_srv_node = graph.merge_one("QServer", "name", "MQT1")
    queue_srv_node['type']= 'WSMQ'
    queue_srv_node.push()
    
    results = graph.create_unique(Relationship(queue_srv_node, "IS_IN", env_node))
+   results = graph.create_unique(Relationship(queue_srv_node, "RUNS_ON", mf_node))
+   
    bridge_node = graph.merge_one("Program", "name", "TEST_Act_Bridge")
    results = graph.create_unique(Relationship(bridge_node, "IS_IN", env_node))
    rabbit_node = graph.merge_one("VM", "name", "dctestqueuesrv1")
@@ -340,11 +359,13 @@ def WriteMFQueueInfo():
    queue_node.push()
    
    results = graph.create_unique(Relationship(queue_node, "IS_IN", env_node))
-   queue_srv_node = graph.merge_one("MF", "name", "MQM1")
+   results = graph.create_unique(Relationship(queue_node, "RUNS_ON", mf_node))
+   queue_srv_node = graph.merge_one("QServer", "name", "MQM1")
    queue_srv_node['type']= 'WSMQ'
    queue_srv_node.push()
    
    results = graph.create_unique(Relationship(queue_srv_node, "IS_IN", env_node))
+   results = graph.create_unique(Relationship(queue_srv_node, "RUNS_ON", mf_node))
    bridge_node = graph.merge_one("Program", "name", "DEMO_Act_Bridge")
    results = graph.create_unique(Relationship(bridge_node, "IS_IN", env_node))
    rabbit_node = graph.merge_one("VM", "name", "dcdemoqueuesrv1")
@@ -359,11 +380,14 @@ def WriteMFQueueInfo():
    results = graph.create_unique(Relationship(queue_srv_node, "CONNECTS_TO", queue_node))
    
 def SetupSystems():
+   print('getallvmsEnviron.py - Setup Systems')
    # Loop thru all environments
    for env in graph.find("Environment"):
       SetupPAS(env)
+      SetupUM(env)
       
 def SetupPAS(env_node):
+   print('getallvmsEnviron.py - Setting up PAS in %s' % env_node["name"])
    env_name = env_node["name"]
    #print(env_name)
    cypher = "MATCH (vm:AppServer)-[:IS_IN]->(e:Environment) WHERE vm.system = 'PAS' and e.name = '%s' RETURN vm" % env_name
@@ -382,40 +406,93 @@ def SetupPAS(env_node):
             if 'TimeServer' in vm.start_node.labels:
                   #print(vm.start_node['name'])
                   results = graph.create_unique(Relationship(app_srv_node, "NEEDS", vm.start_node))
-        
+
+def SetupUM(env_node):
+   print('getallvmsEnviron.py - Setting up User Management in %s' % env_node["name"])
+   env_name = env_node["name"]
+   #print(env_name)
+   cypher = "MATCH (vm:GatewayServer)-[:IS_IN]->(e:Environment) WHERE vm.system = 'UserMgmnt' and e.name = '%s' RETURN vm" % env_name
+   results = graph.cypher.execute(cypher) 
+   for rec in results:
+      #print(rec.vm['name'])
+      app_srv_node = rec.vm
+      for vm in graph.match(start_node=env_node, rel_type="IS_IN", bidirectional=True):
+         if vm.start_node["system"] == "UserMgmnt": 
+            
+            if 'AuthServer' in vm.start_node.labels:
+               #print(vm.start_node['name'])
+               auth_node = vm.start_node
+               results = graph.create_unique(Relationship(app_srv_node, "NEEDS", auth_node))
+            if 'DiscServer' in vm.start_node.labels:
+               #print(vm.start_node['name'])
+               results = graph.create_unique(Relationship(app_srv_node, "NEEDS", vm.start_node))
+            if 'DBServer' in vm.start_node.labels:
+               #print(vm.start_node['name'])
+               db_node = vm.start_node
+                              
+      results = graph.create_unique(Relationship(auth_node, "NEEDS", db_node))
             
 
 
-'''
-      print(vm.start_node["name"])
-      if vm.start_node.
-      if 'queue' in vm.start_node["name"]:
-         vm_node.labels.add("QServer")
-         SetupQueues(vm_node)
-         
-      if 'app' in name:
-         vm_node.labels.add("AppServer")
-      if 'mongo' in name:
-         vm_node.labels.add("DBServer")
-      if 'cass' in name:
-         vm_node.labels.add("DBServer")
-      if 'elast' in name:
-         vm_node.labels.add("DBServer")
-'''      
-'''
-   # find the correct rabbit queue - using find rather than merge because if doesn't 
-   #    exist there is a problem
-   rabbitq_node = graph.find_one("Queue", "name", "DEV_actuarial")
+def LoadConstraints():
+   print('getallvmsEnviron.py - Loading Constraints')
+   graph.schema.create_uniqueness_constraint("Domain", "name")
+   graph.schema.create_uniqueness_constraint("Environment", "name")
+   graph.schema.create_uniqueness_constraint("VM", "name")
+   graph.schema.create_uniqueness_constraint("Mainframe", "name")
+   graph.schema.create_uniqueness_constraint("VMwareCluster", "name")
+   graph.schema.create_uniqueness_constraint("VMwareServer", "name")
+   graph.schema.create_uniqueness_constraint("Queue", "name")
+   graph.schema.create_uniqueness_constraint("QServer", "name")
+   graph.schema.create_uniqueness_constraint("AppServer", "name")
+   graph.schema.create_uniqueness_constraint("DBServer", "name")
+   graph.schema.create_uniqueness_constraint("DiscServer", "name")
+   graph.schema.create_uniqueness_constraint("GatewayServer", "name")
+   graph.schema.create_uniqueness_constraint("Program", "name")
+   graph.schema.create_uniqueness_constraint("TimeServer", "name")
+   # LPAR
+def DeleteConstraints():
+   print('getallvmsEnviron.py - Deleting Constraints')
+   graph.schema.drop_uniqueness_constraint("Domain", "name")
+   graph.schema.drop_uniqueness_constraint("Environment", "name")
+   graph.schema.drop_uniqueness_constraint("VM", "name")
+   graph.schema.drop_uniqueness_constraint("Mainframe", "name")
+   graph.schema.drop_uniqueness_constraint("VMwareCluster", "name")
+   graph.schema.drop_uniqueness_constraint("VMwareServer", "name")
+   graph.schema.drop_uniqueness_constraint("Queue", "name")
+   graph.schema.drop_uniqueness_constraint("QServer", "name")
+   graph.schema.drop_uniqueness_constraint("AppServer", "name")
+   graph.schema.drop_uniqueness_constraint("DBServer", "name")
+   graph.schema.drop_uniqueness_constraint("DiscServer", "name")
+   graph.schema.drop_uniqueness_constraint("GatewayServer", "name")
+   graph.schema.drop_uniqueness_constraint("Program", "name")
+   graph.schema.drop_uniqueness_constraint("TimeServer", "name")
+   # LPAR
    
-   results = graph.create_unique(Relationship(bridge_node, "READS", rabbitq_node))
-   results = graph.create_unique(Relationship(bridge_node, "RUNS_ON", rabbit_node))
-   results = graph.create_unique(Relationship(bridge_node, "CONNECTS_TO", queue_srv_node))
-   results = graph.create_unique(Relationship(queue_srv_node, "CONNECTS_TO", queue_node))
-   '''
+def DeleteGraph():
+   print('getallvmsEnviron.py - Deleting Existing Graph')
+   DeleteConstraints()
+   graph.cypher.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-()DELETE n,r")
+   
+def LoadDomains():
+   print('getallvmsEnviron.py - Loading Domains')
+   file = open("LoadDomain.txt")
+   cypher = file.read()
+   file.close()
+   graph.cypher.execute(cypher)
+   
 def main():
    global graph
+    
    graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
+   #graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
+   print(graph.uri)
+   DeleteGraph()
+   LoadConstraints()
+   LoadDomains()
+   
    ReadVMs()
+   
    WriteMFQueueInfo()
    SetupSystems()
    
