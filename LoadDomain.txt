@@ -21,37 +21,37 @@ MERGE (client:Domain {
 MERGE (billing:Domain {
 			name:'Billing',
 			status: 'UP',
-			system: 'BILLING'
+			system: 'Billing'
 		})
 // MERGE Actuarial
 MERGE (actuarial:Domain {
 			name:'Actuarial',
 			status: 'UP',
-			system: 'ACTUARIAL'
+			system: 'Actuarial'
 		})
 // MERGE Ratabase
 MERGE (ratabase:Domain {
 			name:'Ratabase',
 			status: 'UP',
-			system: 'RATABASE'
+			system: 'Ratabase'
 		})
 // MERGE Marketing Automation
 MERGE (marketing:Domain {
 			name:'MarketingAutomation',
 			status: 'UP',
-			system: 'MARKETINGAUTOMATION'
+			system: 'MarketingAutomation'
 		})
 // MERGE Document Management
 MERGE (doc:Domain {
 			name:'DocumentMGMT',
 			status: 'UP',
-			system: 'DOCUMENTMANAGEMENT'
+			system: 'DocumentManagement'
 		})
 // MERGE User Management
 MERGE (um:Domain {
 			name:'UserMGMT',
 			status: 'UP',
-			system: 'USERMGMNT'
+			system: 'UserMgmnt'
 		})
 // MERGE Claims
 MERGE (claims:Domain {
