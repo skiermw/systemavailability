@@ -85,7 +85,16 @@ def GetEnvironment(env_letter):
 
    return environment
 
-
+def SetupVMware():
+   #print('getallvmsEnviron.py - Setup VMware')
+    vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannelCluster")
+    vm_hw_1_node = graph.merge_one("Hardware", "name", "DirectChannelServer1")
+    vm_hw_2_node = graph.merge_one("Hardware", "name", "DirectChannelServer2")
+    vm_hw_3_node = graph.merge_one("Hardware", "name", "DirectChannelServer3")
+    results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_1_node))
+    results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_2_node))
+    results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_3_node))
+    
 def WriteVmInfo(vm, depth=1):
    #print('getallvmsEnviron.py - Writing VMs to Graph')
    """
@@ -114,7 +123,8 @@ def WriteVmInfo(vm, depth=1):
       
    #print('name = %s' % summary.config.name)   
    system, environ = GetSystem(summary.config.name)
-   
+
+   vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannelCluster")
    
    vm_node = graph.merge_one("VM", "name", name) 
    vm_node['ip'] = ip
@@ -200,7 +210,7 @@ def WriteVmInfo(vm, depth=1):
    if 'mng' in name:
       vm_node.labels.add("DBServer")
       vm_node.labels.add("MongoDB")
-   if 'mon' in name:
+   if 'mon' in name and not 'mongo' in name:
       vm_node.labels.add("DBMonitor")
    if 'rep' in name:
       vm_node.labels.add("RepoServer")
@@ -217,6 +227,9 @@ def WriteVmInfo(vm, depth=1):
       vm_node.labels.add("DevOpsServer")
       
    vm_node.push()
+   
+   # Attach VM to VM Cluster
+   results = graph.create_unique(Relationship(vm_node, "RUNS_ON", vm_cluster_node))
                                       
 def WriteQueueInfo(qmgr_node, queue, routing_key):
    #print('getallvmsEnviron.py - Writing Queue Info')
@@ -326,6 +339,8 @@ def SetupMFQueue(env_node):
    
    # setup Mainframe node
    mf_node = graph.merge_one("Mainframe", "name", "Mainframe")
+   mf_node['type'] = 'Hardware'
+   mf_node.push()
    
    if env_node["name"] == "DEVL":
       q_srv_name = "MQD1"
@@ -349,19 +364,18 @@ def SetupMFQueue(env_node):
    #   Backoffice WSMQ queue creation
    bo_queue_node = graph.merge_one("Queue", "name", "%s_DIRECT.BACKOFFICE.PREMIUM" % env_node["name"]) 
    bo_queue_node['type']= 'WSMQ'
-   bo_queue_node['system']= 'PAS'
+   bo_queue_node['system']= 'BackOffice'
    bo_queue_node.push()
    results = graph.create_unique(Relationship(bo_queue_node, "IS_IN", env_node))
-   #results = graph.create_unique(Relationship(bo_queue_node, "RUNS_ON", mf_node))
-   
+
+      
    #    Reporting WSMQ queue creation
    rpt_queue_node = graph.merge_one("Queue", "name", "%s_DIRECT.REPORTING.POLICYMSGS" % env_node["name"]) 
    rpt_queue_node['type']= 'WSMQ'
-   rpt_queue_node['system']= 'PAS'
+   rpt_queue_node['system']= 'Reporting'
    rpt_queue_node.push()
    results = graph.create_unique(Relationship(rpt_queue_node, "IS_IN", env_node))
-   #results = graph.create_unique(Relationship(rpt_queue_node, "RUNS_ON", mf_node))
-
+   
    #  get WSMQ Q manager for this environment
    mq_queue_srv_node = graph.merge_one("QServer", "name", q_srv_name)
    mq_queue_srv_node['type']= 'WSMQ'
@@ -390,6 +404,8 @@ def SetupMFQueue(env_node):
       results = graph.create_unique(Relationship(bo_bridge_node, "RUNS_ON", rabbit_queue_srv_node))
       results = graph.create_unique(Relationship(rpt_bridge_node, "RUNS_ON", rabbit_queue_srv_node))
       
+   
+   
    #  get the Rabbit Queue (should have been defined when reading the RabbitMQ server)
    #    Backoffice
    rabbitq_node = graph.merge_one("Queue", "name", "%s_actuarial" % env_node["name"])
@@ -398,7 +414,7 @@ def SetupMFQueue(env_node):
    results = graph.create_unique(Relationship(bo_queue_node, "RUNS_ON", mq_queue_srv_node))
    
    #    Reporting
-   rpt_rabbitq_node = graph.merge_one("Queue", "name", "%s_actuarial" % env_node["name"])
+   rpt_rabbitq_node = graph.merge_one("Queue", "name", "%s_reporting" % env_node["name"])
    results = graph.create_unique(Relationship(rpt_bridge_node, "CONNECTS_TO", rpt_rabbitq_node))
    results = graph.create_unique(Relationship(rpt_bridge_node, "CONNECTS_TO", rpt_queue_node))
    results = graph.create_unique(Relationship(rpt_queue_node, "RUNS_ON", mq_queue_srv_node))   
@@ -486,30 +502,40 @@ def SetupBackOffice(env_node):
    bo_queue_node['type']= 'WSMQ'
    bo_queue_node['system']= 'BackOffice'
    bo_queue_node.push()
+   
    results = graph.create_unique(Relationship(bo_queue_node, "IS_IN", env_node))
    results = graph.create_unique(Relationship(bo_queue_node, "RUNS_ON", mq_queue_srv_node))
    
-   cics_node = graph.merge_one("PROGRAM", "name", "%s_DPAS" % env_node["name"])
+   cics_node = graph.merge_one("Program", "name", "%s_DPAS" % env_node["name"])
    cics_node['system'] = 'BackOffice'
    cics_node['type'] = 'CICS'
    cics_node.push()
+   results = graph.create_unique(Relationship(cics_node, "IS_IN", env_node))
    cics_env_node = graph.merge_one("CICSEnv", "name", "%s" % cics_env_name)
    cics_env_node['system'] = 'BackOffice'
    cics_env_node['type'] = 'CICS'
    cics_env_node.push()
+   results = graph.create_unique(Relationship(cics_env_node, "IS_IN", env_node))
 
    lpar_node = graph.merge_one("LPAR", "name", "%s" % lpar_name)
    
-   results = graph.create_unique(Relationship(cics_node, "CONNECTS_TO", bo_queue_node))
+   bo_prem_queue_node = graph.merge_one("Queue", "name", "%s_DIRECT.BACKOFFICE.PREMIUM" % env_node["name"])
+   
+   results = graph.create_unique(Relationship(cics_node, "CONNECTS_TO", bo_prem_queue_node))
    results = graph.create_unique(Relationship(cics_node, "RUNS_ON", cics_env_node))
    results = graph.create_unique(Relationship(cics_env_node, "RUNS_ON", lpar_node))
    results = graph.create_unique(Relationship(lpar_node, "RUNS_ON", mf_node))
 
    db2_node = graph.merge_one("DBServer", "name", "%s" % db2_name)
+   db2_node['type'] = 'DB/2'
+   db2_node['system'] = 'BackOffice'
+   db2_node.push()
    db2_env_node = graph.merge_one("DB2Env", "name", "%s" % db2_env_name)
    results = graph.create_unique(Relationship(cics_node, "CONNECTS_TO", db2_node))
    results = graph.create_unique(Relationship(db2_node, "RUNS_ON", db2_env_node))
    results = graph.create_unique(Relationship(db2_env_node, "RUNS_ON", lpar_node))
+   results = graph.create_unique(Relationship(db2_node, "IS_IN", env_node))
+   
    
 def SetupPAS(env_node):
    #print('getallvmsEnviron.py - Setting up PAS in %s' % env_node["name"])
@@ -518,9 +544,14 @@ def SetupPAS(env_node):
    #   Lexis/Nexis
    #   Smarty Streets
    test_lexis_node = graph.merge_one("ExternalService", "name", "Test_LexisNexis")
-   
+   test_lexis_node['system']="PAS"
+   test_lexis_node.push()
    prod_lexis_node = graph.merge_one("ExternalService", "name", "Prod_LexisNexis")
+   prod_lexis_node['system']="PAS"
+   prod_lexis_node.push()
    smarty_streets_node = graph.merge_one("ExternalService", "name", "SmartyStreets")
+   smarty_streets_node['system']="PAS"
+   smarty_streets_node.push()
    results = graph.create_unique(Relationship(smarty_streets_node, "IS_IN", env_node))
    if env_node['name'] == 'PROD':
       results = graph.create_unique(Relationship(prod_lexis_node, "IS_IN", env_node))
@@ -533,12 +564,12 @@ def SetupPAS(env_node):
       #print(rec.vm['name'])
       app_srv_node = rec.vm
       # connect AppServer to Smarty Streets (all environments go to single service)
-      results = graph.create_unique(Relationship(app_srv_node, "NEEDS", smarty_streets_node))
+      results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", smarty_streets_node))
       # connect AppServer to Lexis/Nexis (PROD environment to PROD all other to test)
       if env_name == 'PROD':
-         results = graph.create_unique(Relationship(app_srv_node, "NEEDS", prod_lexis_node))
+         results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", prod_lexis_node))
       else:
-         results = graph.create_unique(Relationship(app_srv_node, "NEEDS", test_lexis_node))
+         results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", test_lexis_node))
   
       for vm in graph.match(start_node=env_node, rel_type="IS_IN", bidirectional=True):
          if vm.start_node["system"] == "PAS": 
@@ -564,16 +595,18 @@ def SetupPAS(env_node):
       cypher = "MATCH (cass:CassandraDB)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN cass" % env_name
       results = graph.cypher.execute(cypher) 
       for rec in results:
-         results = graph.create_unique(Relationship(rec.cass, "MONITORED_BY", db_mon_node))
+         results = graph.create_unique(Relationship(rec.cass, "CONNECTS_TO", db_mon_node))
    # Mongo monitor (in the cloud!)
    mongo_mon_node = graph.merge_one("DBMonitor", "name", "MongoMonitor")
    mongo_mon_node.labels.add("CloudServer")
    mongo_mon_node['system']="PAS"
    mongo_mon_node.push()
+   results = graph.create_unique(Relationship(mongo_mon_node, "IS_IN", env_node))
+                                 
    cypher = "MATCH (mongo:MongoDB)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN mongo" % env_name
    results = graph.cypher.execute(cypher) 
    for rec in results:
-      results = graph.create_unique(Relationship(rec.mongo, "MONITORED_BY", mongo_mon_node))
+      results = graph.create_unique(Relationship(rec.mongo, "CONNECTS_TO", mongo_mon_node))
 
    
 
@@ -688,6 +721,7 @@ def main():
    DeleteGraph()
    LoadConstraints()
    LoadDomains()
+   SetupVMware()
    ReadVMs()
    
    SetupSystems()

@@ -45,7 +45,7 @@ MERGE (marketing:Domain {
 MERGE (doc:Domain {
 			name:'DocumentMGMT',
 			status: 'UP',
-			system: 'DocumentManagement'
+			system: 'DocMgmnt'
 		})
 // MERGE User Management
 MERGE (um:Domain {
