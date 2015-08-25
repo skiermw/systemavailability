@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# VMware vSphere Python SDK
+# 
 
 """
-Python program for listing the vms on an ESX / vCenter host
+Python program for modeling the SAY system
 """
 from __future__ import print_function
 
@@ -25,6 +25,7 @@ def GetSystem(name):
    say_um = 'sayum'
    say_doc = 'saydoc'
    billing = 'bill'
+   
  
    # new style VM naming conventions
    if name[:2]=='pa':
@@ -38,6 +39,9 @@ def GetSystem(name):
       environ = GetEnvironment(name[2])
    elif name[:2]=='um':
       system = 'UserMgmnt'
+      environ = GetEnvironment(name[2])
+   elif name[:2]=='cl':
+      system = 'Client'
       environ = GetEnvironment(name[2])
    # end new style
    elif name[:2]==dc:
@@ -55,6 +59,9 @@ def GetSystem(name):
    elif name[:4]==billing:
       system = 'Billing'
       environ = name[4:8].upper()
+   elif name == 'dirchanlsrv1':
+      system = 'PAS'
+      environ = 'PROD'
    else:
       system = 'UNKNOWN'
       environ = 'UNKNOWN'
@@ -282,7 +289,7 @@ def ReadVMs():
    print('getallvmsEnviron.py - Reading VMs from VMware')
    url='VCPRODSRV1'
    username='tsojmw'
-   password='hyenas21'
+   password='hyenas22'
    try:
       si = SmartConnect(
             host=url,
@@ -425,11 +432,13 @@ def SetupSystems():
    print('getallvmsEnviron.py - Setup Systems')
    # Loop thru all environments
    for env in graph.find("Environment"):
+      SetupRatabase(env)
       SetupPAS(env)
       SetupUM(env)
       SetupMFQueue(env)
       SetupClaims(env)
       SetupBackOffice(env)
+      
       
 def SetupClaims(env_node):
    print('getallvmsEnviron.py - Setting up Claims in %s' % env_node["name"])
@@ -563,6 +572,12 @@ def SetupPAS(env_node):
    for rec in results:
       #print(rec.vm['name'])
       app_srv_node = rec.vm
+      # connect AppServer to Ratabase
+      ratabase_cypher = "MATCH (vm:AppServer)-[:IS_IN]->(e:Environment) WHERE vm.system = 'Ratabase' and e.name = '%s' RETURN vm" % env_name
+      ratabase_results = graph.cypher.execute(ratabase_cypher)
+      for ratabase_vm in ratabase_results:
+         ratabase_node = ratabase_vm.vm
+         results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", ratabase_node))
       # connect AppServer to Smarty Streets (all environments go to single service)
       results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", smarty_streets_node))
       # connect AppServer to Lexis/Nexis (PROD environment to PROD all other to test)
@@ -674,7 +689,18 @@ def SetupUM(env_node):
          app_srv_node = rec.vm
          #print("app srv: %s - gw_srv: %s" % (app_srv_node['name'], gw_srv_node['name']))
          results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", gw_srv_node))
-
+         
+def SetupRatabase(env_node):
+   print('getallvmsEnviron.py - Setting up Ratabase in %s' % env_node["name"])
+   ######
+   # I don't have access to the Ratabase VMs
+   #   so this will build the nodes for each environment
+   ######
+   env_name = env_node["name"]
+   ratabase_name = 'rb%sappsrv1' % env_name
+   ratabase_node = Node('AppServer', 'VM', system='Ratabase', name=ratabase_name, status='unknown' ) 
+   results = graph.create_unique(Relationship(ratabase_node, "IS_IN", env_node))
+      
 def LoadConstraints():
    print('getallvmsEnviron.py - Loading Constraints')
    graph.schema.create_uniqueness_constraint("Domain", "name")
@@ -715,8 +741,8 @@ def LoadDomains():
 def main():
    global graph
     
-   graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
-   #graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
+   #graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
+   graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
    print(graph.uri)
    DeleteGraph()
    LoadConstraints()
