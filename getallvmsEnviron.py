@@ -562,10 +562,25 @@ def SetupPAS(env_node):
    smarty_streets_node['system']="PAS"
    smarty_streets_node.push()
    results = graph.create_unique(Relationship(smarty_streets_node, "IS_IN", env_node))
+   #  MF ESP scheduling
+   devl_esp_node = graph.merge_one("Scheduler", "name", "Test_ESP")
+   devl_esp_node['system']="ESP"
+   devl_esp_node.push()
+   prod_esp_node = graph.merge_one("Scheduler", "name", "Prod_ESP")
+   prod_esp_node['system']="ESP"
+   prod_esp_node.push()
+   
    if env_node['name'] == 'PROD':
       results = graph.create_unique(Relationship(prod_lexis_node, "IS_IN", env_node))
+      results = graph.create_unique(Relationship(prod_esp_node, "IS_IN", env_node))
+      lpar_node = graph.merge_one("LPAR", "name", "PROD")
+      results = graph.create_unique(Relationship(prod_esp_node, "RUN_ON", lpar_node))
    else:
       results = graph.create_unique(Relationship(test_lexis_node, "IS_IN", env_node))
+      results = graph.create_unique(Relationship(devl_esp_node, "IS_IN", env_node))
+      lpar_node = graph.merge_one("LPAR", "name", "DEVL")
+      results = graph.create_unique(Relationship(devl_esp_node, "RUN_ON", lpar_node))
+   
    #  Read thru all PAS AppServers
    cypher = "MATCH (vm:AppServer)-[:IS_IN]->(e:Environment) WHERE vm.system = 'PAS' and e.name = '%s' RETURN vm" % env_name
    results = graph.cypher.execute(cypher) 
@@ -578,6 +593,12 @@ def SetupPAS(env_node):
       for ratabase_vm in ratabase_results:
          ratabase_node = ratabase_vm.vm
          results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", ratabase_node))
+      # connect AppServer to Client
+      client_cypher = "MATCH (vm:AppServer)-[:IS_IN]->(e:Environment) WHERE vm.system = 'Client' and e.name = '%s' RETURN vm" % env_name
+      client_results = graph.cypher.execute(client_cypher)
+      for client_vm in client_results:
+         client_node = client_vm.vm
+         results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", client_node))
       # connect AppServer to Smarty Streets (all environments go to single service)
       results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", smarty_streets_node))
       # connect AppServer to Lexis/Nexis (PROD environment to PROD all other to test)
@@ -597,6 +618,13 @@ def SetupPAS(env_node):
             if 'TimeServer' in vm.start_node.labels:
                   #print(vm.start_node['name'])
                   results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", vm.start_node))
+            if 'BatchServer' in vm.start_node.labels:
+                  #print(vm.start_node['name'])
+                  results = graph.create_unique(Relationship(app_srv_node, "CONNECTS_TO", vm.start_node))
+                  if env_name == 'PROD':
+                     results = graph.create_unique(Relationship(vm.start_node, "CONNECTS_TO", prod_esp_node))
+                  else:
+                     results = graph.create_unique(Relationship(vm.start_node, "CONNECTS_TO", devl_esp_node))
                   
       SetupRESTEndPoints(app_srv_node, env_node)
       
@@ -741,8 +769,8 @@ def LoadDomains():
 def main():
    global graph
     
-   #graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
-   graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
+   graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
+   #graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
    print(graph.uri)
    DeleteGraph()
    LoadConstraints()
