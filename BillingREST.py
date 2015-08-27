@@ -3,11 +3,14 @@
 import urllib2
 
 def SetupRESTEndPoints():
-    app_srv_node = 'billdevappsrv1'
-   
-    url = 'http://%s:8090/api/resource.json' % app_srv_node
+    #app_srv_node = ''
+    app_srv_node = 'cldapp1'   
+    #url = 'http://billdevappsrv1:8090/api/resource.json'
+    url = 'http://dcdevappsrv1:8083/api/resource.json'
+    #url = 'http://cldapp1:8080'
+    
     response = urllib2.urlopen(url).read()
-    #print('error: %s' % urllib2.URLError)
+    print('error: %s' % urllib2.URLError)
     #data = json.loads(response)
     print(response.text)
     

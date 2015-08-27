@@ -186,7 +186,9 @@ def WriteVmInfo(vm, depth=1):
       
    # new style naming   
    if 'app' in name:
+      #print('name: %s' % name)
       vm_node.labels.add("AppServer")
+      vm_node.labels.add("%sServer" % vm_node['system'])
    if 'aut' in name:
       vm_node.labels.add("AuthServer")
    if 'bat' in name:
@@ -438,6 +440,7 @@ def SetupSystems():
       SetupMFQueue(env)
       SetupClaims(env)
       SetupBackOffice(env)
+      SetupFeatures(env)
       
       
 def SetupClaims(env_node):
@@ -554,12 +557,15 @@ def SetupPAS(env_node):
    #   Smarty Streets
    test_lexis_node = graph.merge_one("ExternalService", "name", "Test_LexisNexis")
    test_lexis_node['system']="PAS"
+   test_lexis_node.labels.add('LexisNexisService')
    test_lexis_node.push()
    prod_lexis_node = graph.merge_one("ExternalService", "name", "Prod_LexisNexis")
    prod_lexis_node['system']="PAS"
+   test_lexis_node.labels.add('LexisNexisService')
    prod_lexis_node.push()
    smarty_streets_node = graph.merge_one("ExternalService", "name", "SmartyStreets")
    smarty_streets_node['system']="PAS"
+   smarty_streets_node.labels.add('SmartyStreetsService')
    smarty_streets_node.push()
    results = graph.create_unique(Relationship(smarty_streets_node, "IS_IN", env_node))
    #  MF ESP scheduling
@@ -659,9 +665,7 @@ def SetupRESTEndPoints(app_srv_node, env_node):
    response = urllib2.urlopen(url).read()
    #print('error: %s' % urllib2.URLError)
    data = json.loads(response)
-
    app_srv_name = app_srv_node["name"]
-   
    system = 'PAS'
    api_version = data['info']['version']
    
@@ -688,7 +692,6 @@ def SetupUM(env_node):
    #print('getallvmsEnviron.py - Setting up User Management in %s' % env_node["name"])
    env_name = env_node["name"]
    #print(env_name)
-   
    cypher = "MATCH (vm:GatewayServer)-[:IS_IN]->(e:Environment) WHERE vm.system = 'UserMgmnt' and e.name = '%s' RETURN vm" % env_name
    results = graph.cypher.execute(cypher) 
    for rec in results:
@@ -696,16 +699,12 @@ def SetupUM(env_node):
       gw_srv_node = rec.vm
       for vm in graph.match(start_node=env_node, rel_type="IS_IN", bidirectional=True):
          if vm.start_node["system"] == "UserMgmnt": 
-            
             if 'AuthServer' in vm.start_node.labels:
-               
                auth_node = vm.start_node
                results = graph.create_unique(Relationship(gw_srv_node, "CONNECTS_TO", auth_node))
             if 'DiscServer' in vm.start_node.labels:
-               
                results = graph.create_unique(Relationship(gw_srv_node, "CONNECTS_TO", vm.start_node))
             if 'DBServer' in vm.start_node.labels:
-               
                db_node = vm.start_node
                               
       results = graph.create_unique(Relationship(auth_node, "CONNECTS_TO", db_node))
@@ -726,9 +725,29 @@ def SetupRatabase(env_node):
    ######
    env_name = env_node["name"]
    ratabase_name = 'rb%sappsrv1' % env_name
-   ratabase_node = Node('AppServer', 'VM', system='Ratabase', name=ratabase_name, status='unknown' ) 
+   ratabase_node = Node('RatabaseServer', 'VM', system='Ratabase', name=ratabase_name, status='unknown' ) 
    results = graph.create_unique(Relationship(ratabase_node, "IS_IN", env_node))
-      
+   
+def SetupFeatures(env_node):
+   print('getallvmsEnviron.py - Setting up Features in %s' % env_node["name"])
+   ####
+   env_name = env_node["name"]
+   #  Setup Quote feature
+   quote_name = 'Quote_' + env_name
+   quote_node = graph.merge_one("Feature", "name", quote_name)
+   quote_node.push()
+
+   dependencies = ('PASServer', 'ElasticDB', 'MongoDB', 'CassandraDB', 'SmartyStreetsService', 'LexisNexisService',
+                   'RatabaseServer', 'GatewayServer', 'AuthServer', 'AuthDBServer', 'BillingServer', 'ClientServer')
+   # connect to feature to  servers
+   for dependency in dependencies:
+      cypher = "MATCH (vm:%s)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN vm" % (dependency, env_name)
+      results = graph.cypher.execute(cypher) 
+      for rec in results:
+         app_srv_node = rec.vm
+         #print("app srv: %s - gw_srv: %s" % (app_srv_node['name'], gw_srv_node['name']))
+         results = graph.create_unique(Relationship(quote_node, "DEPENDS_ON", app_srv_node))
+   
 def LoadConstraints():
    print('getallvmsEnviron.py - Loading Constraints')
    graph.schema.create_uniqueness_constraint("Domain", "name")
