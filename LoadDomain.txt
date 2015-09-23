@@ -73,9 +73,9 @@ MERGE (reporting:Domain {
 		})
 // MERGE Front End
 MERGE (web:Domain {
-			name:'WebFrontEnd',
+			name:'FrontEnd',
 			status: 'UP',
-			system: 'WebFrontEnd'
+			system: 'FrontEnd'
 		})
 				
 // Connect CRM to Marketing Automation

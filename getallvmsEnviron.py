@@ -183,7 +183,8 @@ def WriteVmInfo(vm, depth=1):
    if 'vagrant' in name:
       vm_node.labels.add("VagrantServer")
       vm_node.labels.add("DevOpsServer")
-      
+   if 'sayum' in name and 'db' in name:
+      vm_node.labels.add("AuthDBServer")
    # new style naming   
    if 'app' in name:
       #print('name: %s' % name)
@@ -291,7 +292,7 @@ def ReadVMs():
    print('getallvmsEnviron.py - Reading VMs from VMware')
    url='VCPRODSRV1'
    username='tsojmw'
-   password='hyenas22'
+   password='hyenas30'
    try:
       si = SmartConnect(
             host=url,
@@ -440,6 +441,7 @@ def SetupSystems():
       SetupMFQueue(env)
       SetupClaims(env)
       SetupBackOffice(env)
+      SetupFrontEnd(env)
       SetupFeatures(env)
       
       
@@ -725,28 +727,73 @@ def SetupRatabase(env_node):
    ######
    env_name = env_node["name"]
    ratabase_name = 'rb%sappsrv1' % env_name
-   ratabase_node = Node('RatabaseServer', 'VM', system='Ratabase', name=ratabase_name, status='unknown' ) 
+   ratabase_node = Node('RatabaseServer', 'VM', system='Ratabase', name=ratabase_name, status='UNKNOWN' ) 
    results = graph.create_unique(Relationship(ratabase_node, "IS_IN", env_node))
+   
+def SetupFrontEnd(env_node):
+   print('getallvmsEnviron.py - Setting up FrontEnd in %s' % env_node["name"])
+   ######
+   # I don't have access to the Frontend VMs and they may be cloud based
+   #   so this will build the nodes for each environment
+   ######
+   env_name = env_node["name"]
+   frontend_name = 'fe%sappsrv1' % env_name
+   frontend_node = Node('FrontEndServer', 'VM', system='FrontEnd', name=frontend_name, status='UNKNOWN' ) 
+   results = graph.create_unique(Relationship(frontend_node, "IS_IN", env_node))
+   
+   connections = ('PASServer', 'SmartyStreetsService', 'DocMgmntServer',
+                   'GatewayServer', 'BillingServer', 'ClientServer')
+   #  Read thru all FrontEnd Servers
+   cypher = "MATCH (vm:FrontEndServer)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN vm" % env_name
+   results = graph.cypher.execute(cypher) 
+   for fe in results:
+      front_end_node = fe.vm
+      # connect to feature to  servers
+      for connection in connections:
+         cypher = "MATCH (vm:%s)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN vm" % (connection, env_name)
+         results = graph.cypher.execute(cypher) 
+         for rec in results:
+            app_srv_node = rec.vm
+            results = graph.create_unique(Relationship(front_end_node, "CONNECTS_TO", app_srv_node))
    
 def SetupFeatures(env_node):
    print('getallvmsEnviron.py - Setting up Features in %s' % env_node["name"])
    ####
    env_name = env_node["name"]
+   #################################################################
    #  Setup Quote feature
    quote_name = 'Quote_' + env_name
    quote_node = graph.merge_one("Feature", "name", quote_name)
    quote_node.push()
-
+   results = graph.create_unique(Relationship(quote_node, "IS_IN", env_node))
+   
    dependencies = ('PASServer', 'ElasticDB', 'MongoDB', 'CassandraDB', 'SmartyStreetsService', 'LexisNexisService',
-                   'RatabaseServer', 'GatewayServer', 'AuthServer', 'AuthDBServer', 'BillingServer', 'ClientServer')
+                   'RatabaseServer', 'GatewayServer', 'AuthServer', 'AuthDBServer', 'BillingServer', 'ClientServer',
+                   'FrontEndServer')
    # connect to feature to  servers
    for dependency in dependencies:
       cypher = "MATCH (vm:%s)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN vm" % (dependency, env_name)
       results = graph.cypher.execute(cypher) 
       for rec in results:
          app_srv_node = rec.vm
-         #print("app srv: %s - gw_srv: %s" % (app_srv_node['name'], gw_srv_node['name']))
          results = graph.create_unique(Relationship(quote_node, "DEPENDS_ON", app_srv_node))
+   #################################################################
+   #  Setup Purchase feature
+   purchase_name = 'Purchase_' + env_name
+   purchase_node = graph.merge_one("Feature", "name", purchase_name)
+   purchase_node.push()
+   results = graph.create_unique(Relationship(purchase_node, "IS_IN", env_node))
+   
+   dependencies = ('PASServer', 'ElasticDB', 'MongoDB', 'CassandraDB', 'SmartyStreetsService', 'LexisNexisService',
+                   'RatabaseServer', 'GatewayServer', 'AuthServer', 'AuthDBServer', 'BillingServer', 'ClientServer',
+                   'DocMgmntServer', 'FrontEndServer')
+   # connect to feature to  servers
+   for dependency in dependencies:
+      cypher = "MATCH (vm:%s)-[:IS_IN]->(e:Environment) WHERE e.name = '%s' RETURN vm" % (dependency, env_name)
+      results = graph.cypher.execute(cypher) 
+      for rec in results:
+         app_srv_node = rec.vm
+         results = graph.create_unique(Relationship(purchase_node, "DEPENDS_ON", app_srv_node))
    
 def LoadConstraints():
    print('getallvmsEnviron.py - Loading Constraints')
@@ -788,8 +835,8 @@ def LoadDomains():
 def main():
    global graph
     
-   graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
-   #graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
+   #graph = Graph("http://neo4j:shelter@10.8.30.170:7474/db/data/")
+   graph = Graph("http://neo4j:shelter@localhost:7474/db/data/")
    print(graph.uri)
    DeleteGraph()
    LoadConstraints()
