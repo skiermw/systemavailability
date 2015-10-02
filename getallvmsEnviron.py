@@ -89,6 +89,8 @@ def GetEnvironment(env_letter):
       environment = 'PROD'
    elif env_letter == 'l':
       environment = 'LOAD'
+   else:
+      environment = 'UNKNOWN'
 
    return environment
 
