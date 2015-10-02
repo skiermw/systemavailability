@@ -59,6 +59,9 @@ def GetSystem(name):
    elif name[:4]==billing:
       system = 'Billing'
       environ = name[4:8].upper()
+   elif name[:4]== 'maje':
+      system = 'Billing'
+      environ = GetEnvironment(name[4:5])
    elif name == 'dirchanlsrv1':
       system = 'PAS'
       environ = 'PROD'
@@ -128,130 +131,279 @@ def WriteVmInfo(vm, depth=1):
       for c in vmList:
          WriteVmInfo(c, depth+1)
       return
-   #print('folder = %s' % folder)
+   print('vm.name = %s' % vm.name)
    if folder == 'DirectChannel':
-      environ = ""
-      summary = vm.summary
-      name = summary.config.name
-      #print( name)
-      os = summary.config.guestFullName
-      state = summary.runtime.powerState
-      if summary.guest != None:
-         ip = summary.guest.ipAddress
-               
-      #print('name = %s' % summary.config.name)   
-      system, environ = GetSystem(summary.config.name)
+      DirectChannelFolder(vm)
+   elif folder == 'Templates':
+      if vm.name[:4] == 'maje':
+         BillingFolder(vm)
 
-      vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannel")
-            
-      vm_node = graph.merge_one("VM", "name", name) 
-      vm_node['ip'] = ip
-      vm_node['system'] = system
-      vm_node['status'] = state
-      vm_node['os'] = os
-      vm_node.push()
-      #print(environ)
-      #print(system)
-      if environ != "UNKNOWN":
-         env_node = graph.merge_one("Environment", "name", environ.upper())
-         results = graph.create_unique(Relationship(vm_node, "IS_IN", env_node))
-            
-
-      if 'queue' in name:
-         vm_node.labels.add("QServer")
-         SetupQueues(vm_node)
-            
-      if 'mongo' in name:
-         vm_node.labels.add("DBServer")
-         vm_node.labels.add("MongoDB")
-            
-      if 'elast' in name:
-         vm_node.labels.add("DBServer")
-         vm_node.labels.add("ElasticDB")
-            
-      if 'time' in name:
-         vm_node.labels.add("TimeServer")
-      if 'gw' in name:
-         vm_node.labels.add("GatewayServer")
-            
-      if 'dbsrv' in name:
-         vm_node.labels.add("DBServer")
-            
-      if 'monitor' in name:
-         vm_node.labels.add("DBMonitor")
-      if 'chef' in name:
-         vm_node.labels.add("ChefServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'build' in name:
-         vm_node.labels.add("BuildServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'repo' in name:
-         vm_node.labels.add("RepoServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'knife' in name:
-         vm_node.labels.add("KnifeServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'vagrant' in name:
-         vm_node.labels.add("VagrantServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'sayum' in name and 'db' in name:
-         vm_node.labels.add("AuthDBServer")
-      # new style naming   
-      if 'app' in name:
-         #print('name: %s' % name)
-         vm_node.labels.add("AppServer")
-         vm_node.labels.add("%sServer" % vm_node['system'])
-      if 'aut' in name:
-         vm_node.labels.add("AuthServer")
-      if 'bat' in name:
-         vm_node.labels.add("BatchServer")
-      if 'bld' in name:
-         vm_node.labels.add("BuildServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'cas' in name:
-         vm_node.labels.add("DBServer")
-         vm_node.labels.add("CassandraDB")
-      if 'chf' in name:
-         vm_node.labels.add("ChefServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'dis' in name:
-         vm_node.labels.add("DiscServer")
-      if 'doc' in name:
-         vm_node.labels.add("DocServer")
-      if 'els' in name:
-         vm_node.labels.add("DBServer")
-         vm_node.labels.add("ElasticDB")
-      if 'gtw' in name:
-         vm_node.labels.add("GatewayServer")
-      if 'knf' in name:
-         vm_node.labels.add("KnifeServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'lic' in name:
-         vm_node.labels.add("LicenseServer")
-      if 'mng' in name:
-         vm_node.labels.add("DBServer")
-         vm_node.labels.add("MongoDB")
-      if 'mon' in name and not 'mongo' in name:
-         vm_node.labels.add("DBMonitor")
-      if 'rep' in name:
-         vm_node.labels.add("RepoServer")
-         vm_node.labels.add("DevOpsServer")
-      if 'rmq' in name:
-         vm_node.labels.add("QServer")
-         SetupQueues(vm_node)
-      if 'tim' in name:
-         vm_node.labels.add("TimeServer")
-      if 'utl' in name:
-         vm_node.labels.add("UtilityServer")
-      if 'vgt' in name:
-         vm_node.labels.add("VagrantServer")
-         vm_node.labels.add("DevOpsServer")
+def BillingFolder(vm):
+   print('In BillingFolder')
+   environ = ""
+   summary = vm.summary
+   name = summary.config.name
+   #print( name)
+   os = summary.config.guestFullName
+   state = summary.runtime.powerState
+   if state == 'poweredON':
+      status = 'UP'
+   elif state == 'poweredOFF':
+      status = 'DOWN'
+   else:
+      status = 'UNKNOWN'
+   numCPU = summary.config.numCpu
+   memSize = summary.config.memorySizeMB
+   if summary.guest != None:
+      ip = summary.guest.ipAddress
                
-      vm_node.push()
+   #print('name = %s' % summary.config.name)   
+   system, environ = GetSystem(summary.config.name)
+
+   vm_cluster_node = graph.merge_one("VMCluster", "name", "UCS-TestDev")
+   vm_hw_1_node = graph.merge_one("Hardware", "name", "esxpsrv10")
+   vm_hw_2_node = graph.merge_one("Hardware", "name", "esxpsrv11")
+   vm_hw_3_node = graph.merge_one("Hardware", "name", "esxpsrv12")
+   vm_hw_4_node = graph.merge_one("Hardware", "name", "esxpsrv13")
+   results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_1_node))
+   results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_2_node))
+   results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_3_node))
+   results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_4_node))
             
-      # Attach VM to VM Cluster
-      results = graph.create_unique(Relationship(vm_node, "RUNS_ON", vm_cluster_node))
-                                      
+   vm_node = graph.merge_one("VM", "name", name) 
+   vm_node['ip'] = ip
+   vm_node['system'] = system
+   vm_node['status'] = status
+   vm_node['os'] = os
+   vm_node['CPUs'] = numCPU
+   vm_node['memory'] = memSize
+   vm_node.push()
+   #print(environ)
+   #print(system)
+   if environ != "UNKNOWN":
+      env_node = graph.merge_one("Environment", "name", environ.upper())
+      results = graph.create_unique(Relationship(vm_node, "IS_IN", env_node))
+   if 'queue' in name:
+      vm_node.labels.add("QServer")
+      SetupQueues(vm_node)
+   if 'mongo' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("MongoDB")
+   if 'elast' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("ElasticDB")
+   if 'time' in name:
+      vm_node.labels.add("TimeServer")
+   if 'gw' in name:
+      vm_node.labels.add("GatewayServer")
+   if 'dbsrv' in name:
+      vm_node.labels.add("DBServer")
+   if 'monitor' in name:
+      vm_node.labels.add("DBMonitor")
+   if 'chef' in name:
+      vm_node.labels.add("ChefServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'build' in name:
+      vm_node.labels.add("BuildServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'repo' in name:
+      vm_node.labels.add("RepoServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'knife' in name:
+      vm_node.labels.add("KnifeServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'vagrant' in name:
+      vm_node.labels.add("VagrantServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'sayum' in name and 'db' in name:
+      vm_node.labels.add("AuthDBServer")
+         
+   # new style naming   
+   if 'app' in name:
+      #print('name: %s' % name)
+      vm_node.labels.add("AppServer")
+      vm_node.labels.add("%sServer" % vm_node['system'])
+   if 'aut' in name:
+      vm_node.labels.add("AuthServer")
+   if 'bat' in name:
+      vm_node.labels.add("BatchServer")
+   if 'bld' in name:
+      vm_node.labels.add("BuildServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'cas' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("CassandraDB")
+   if 'chf' in name:
+      vm_node.labels.add("ChefServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'dis' in name:
+      vm_node.labels.add("DiscServer")
+   if 'doc' in name:
+      vm_node.labels.add("DocServer")
+   if 'els' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("ElasticDB")
+   if 'gtw' in name:
+      vm_node.labels.add("GatewayServer")
+   if 'knf' in name:
+      vm_node.labels.add("KnifeServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'lic' in name:
+      vm_node.labels.add("LicenseServer")
+   if 'mng' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("MongoDB")
+   if 'mon' in name and not 'mongo' in name:
+      vm_node.labels.add("DBMonitor")
+   if 'rep' in name:
+      vm_node.labels.add("RepoServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'sql' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("SQLServer")
+   if 'rmq' in name:
+      vm_node.labels.add("QServer")
+      SetupQueues(vm_node)
+   if 'tim' in name:
+      vm_node.labels.add("TimeServer")
+   if 'utl' in name:
+      vm_node.labels.add("UtilityServer")
+   if 'vgt' in name:
+      vm_node.labels.add("VagrantServer")
+      vm_node.labels.add("DevOpsServer")
+               
+   vm_node.push()
+            
+   # Attach VM to VM Cluster
+   results = graph.create_unique(Relationship(vm_node, "RUNS_ON", vm_cluster_node))      
+      
+def DirectChannelFolder(vm):
+   environ = ""
+   summary = vm.summary
+   name = summary.config.name
+   #print( name)
+   os = summary.config.guestFullName
+   state = summary.runtime.powerState
+   if state == 'poweredON':
+      status = 'UP'
+   elif state == 'poweredOFF':
+      status = 'DOWN'
+   else:
+      status = 'UNKNOWN'
+   numCPU = summary.config.numCpu
+   memSize = summary.config.memorySizeMB
+   if summary.guest != None:
+      ip = summary.guest.ipAddress
+               
+   #print('name = %s' % summary.config.name)   
+   system, environ = GetSystem(summary.config.name)
+
+   vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannel")
+            
+   vm_node = graph.merge_one("VM", "name", name) 
+   vm_node['ip'] = ip
+   vm_node['system'] = system
+   vm_node['status'] = status
+   vm_node['os'] = os
+   vm_node['CPUs'] = numCPU
+   vm_node['memory'] = memSize
+   vm_node.push()
+   #print(environ)
+   #print(system)
+   if environ != "UNKNOWN":
+      env_node = graph.merge_one("Environment", "name", environ.upper())
+      results = graph.create_unique(Relationship(vm_node, "IS_IN", env_node))
+   if 'queue' in name:
+      vm_node.labels.add("QServer")
+      SetupQueues(vm_node)
+   if 'mongo' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("MongoDB")
+   if 'elast' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("ElasticDB")
+   if 'time' in name:
+      vm_node.labels.add("TimeServer")
+   if 'gw' in name:
+      vm_node.labels.add("GatewayServer")
+   if 'dbsrv' in name:
+      vm_node.labels.add("DBServer")
+   if 'monitor' in name:
+      vm_node.labels.add("DBMonitor")
+   if 'chef' in name:
+      vm_node.labels.add("ChefServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'build' in name:
+      vm_node.labels.add("BuildServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'repo' in name:
+      vm_node.labels.add("RepoServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'knife' in name:
+      vm_node.labels.add("KnifeServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'vagrant' in name:
+      vm_node.labels.add("VagrantServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'sayum' in name and 'db' in name:
+      vm_node.labels.add("AuthDBServer")
+         
+   # new style naming   
+   if 'app' in name:
+      #print('name: %s' % name)
+      vm_node.labels.add("AppServer")
+      vm_node.labels.add("%sServer" % vm_node['system'])
+   if 'aut' in name:
+      vm_node.labels.add("AuthServer")
+   if 'bat' in name:
+      vm_node.labels.add("BatchServer")
+   if 'bld' in name:
+      vm_node.labels.add("BuildServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'cas' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("CassandraDB")
+   if 'chf' in name:
+      vm_node.labels.add("ChefServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'dis' in name:
+      vm_node.labels.add("DiscServer")
+   if 'doc' in name:
+      vm_node.labels.add("DocServer")
+   if 'els' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("ElasticDB")
+   if 'gtw' in name:
+      vm_node.labels.add("GatewayServer")
+   if 'knf' in name:
+      vm_node.labels.add("KnifeServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'lic' in name:
+      vm_node.labels.add("LicenseServer")
+   if 'mng' in name:
+      vm_node.labels.add("DBServer")
+      vm_node.labels.add("MongoDB")
+   if 'mon' in name and not 'mongo' in name:
+      vm_node.labels.add("DBMonitor")
+   if 'rep' in name:
+      vm_node.labels.add("RepoServer")
+      vm_node.labels.add("DevOpsServer")
+   if 'rmq' in name:
+      vm_node.labels.add("QServer")
+      SetupQueues(vm_node)
+   if 'tim' in name:
+      vm_node.labels.add("TimeServer")
+   if 'utl' in name:
+      vm_node.labels.add("UtilityServer")
+   if 'vgt' in name:
+      vm_node.labels.add("VagrantServer")
+      vm_node.labels.add("DevOpsServer")
+               
+   vm_node.push()
+            
+   # Attach VM to VM Cluster
+   results = graph.create_unique(Relationship(vm_node, "RUNS_ON", vm_cluster_node))
+   
 def WriteQueueInfo(qmgr_node, queue, routing_key):
    #print('getallvmsEnviron.py - Writing Queue Info')
    #print('   qmgr_node: %s' % qmgr_node['name'])
