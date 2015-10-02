@@ -96,13 +96,16 @@ def GetEnvironment(env_letter):
 
 def SetupVMware():
    #print('getallvmsEnviron.py - Setup VMware')
-    vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannelCluster")
-    vm_hw_1_node = graph.merge_one("Hardware", "name", "DirectChannelServer1")
-    vm_hw_2_node = graph.merge_one("Hardware", "name", "DirectChannelServer2")
-    vm_hw_3_node = graph.merge_one("Hardware", "name", "DirectChannelServer3")
+   #  Actually sets up Direct Channel
+    vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannel")
+    vm_hw_1_node = graph.merge_one("Hardware", "name", "esxpsrv1")
+    vm_hw_2_node = graph.merge_one("Hardware", "name", "esxpsrv2")
+    vm_hw_3_node = graph.merge_one("Hardware", "name", "esxpsrv3")
+    vm_hw_4_node = graph.merge_one("Hardware", "name", "esxpsrv4")
     results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_1_node))
     results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_2_node))
     results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_3_node))
+    results = graph.create_unique(Relationship(vm_cluster_node, "RUNS_ON", vm_hw_4_node))
     
 def WriteVmInfo(vm, depth=1):
    #print('getallvmsEnviron.py - Writing VMs to Graph')
@@ -111,137 +114,143 @@ def WriteVmInfo(vm, depth=1):
     with depth protection
    """
    maxdepth = 10
-   
+   global folder
    # if this is a group it will have children. if it does, recurse into them
    # and then return
    if hasattr(vm, 'childEntity'):
       if depth > maxdepth:
          return
+      print('VM Folder: %s' % vm.name)
+      #print('Depth: %s' % depth)
+      #global folder 
+      folder = vm.name
       vmList = vm.childEntity
       for c in vmList:
          WriteVmInfo(c, depth+1)
       return
-   environ = ""
-   summary = vm.summary
-   name = summary.config.name
-   #print( name)
-   os = summary.config.guestFullName
-   state = summary.runtime.powerState
-   if summary.guest != None:
-      ip = summary.guest.ipAddress
-      
-   #print('name = %s' % summary.config.name)   
-   system, environ = GetSystem(summary.config.name)
+   #print('folder = %s' % folder)
+   if folder == 'DirectChannel':
+      environ = ""
+      summary = vm.summary
+      name = summary.config.name
+      #print( name)
+      os = summary.config.guestFullName
+      state = summary.runtime.powerState
+      if summary.guest != None:
+         ip = summary.guest.ipAddress
+               
+      #print('name = %s' % summary.config.name)   
+      system, environ = GetSystem(summary.config.name)
 
-   vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannelCluster")
-   
-   vm_node = graph.merge_one("VM", "name", name) 
-   vm_node['ip'] = ip
-   vm_node['system'] = system
-   vm_node['status'] = state
-   vm_node['os'] = os
-   vm_node.push()
-   #print(environ)
-   #print(system)
-   if environ != "UNKNOWN":
-      env_node = graph.merge_one("Environment", "name", environ.upper())
-      results = graph.create_unique(Relationship(vm_node, "IS_IN", env_node))
-   
+      vm_cluster_node = graph.merge_one("VMCluster", "name", "DirectChannel")
+            
+      vm_node = graph.merge_one("VM", "name", name) 
+      vm_node['ip'] = ip
+      vm_node['system'] = system
+      vm_node['status'] = state
+      vm_node['os'] = os
+      vm_node.push()
+      #print(environ)
+      #print(system)
+      if environ != "UNKNOWN":
+         env_node = graph.merge_one("Environment", "name", environ.upper())
+         results = graph.create_unique(Relationship(vm_node, "IS_IN", env_node))
+            
 
-   if 'queue' in name:
-      vm_node.labels.add("QServer")
-      SetupQueues(vm_node)
-   
-   if 'mongo' in name:
-      vm_node.labels.add("DBServer")
-      vm_node.labels.add("MongoDB")
-   
-   if 'elast' in name:
-      vm_node.labels.add("DBServer")
-      vm_node.labels.add("ElasticDB")
-   
-   if 'time' in name:
-      vm_node.labels.add("TimeServer")
-   if 'gw' in name:
-      vm_node.labels.add("GatewayServer")
-   
-   if 'dbsrv' in name:
-      vm_node.labels.add("DBServer")
-   
-   if 'monitor' in name:
-      vm_node.labels.add("DBMonitor")
-   if 'chef' in name:
-      vm_node.labels.add("ChefServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'build' in name:
-      vm_node.labels.add("BuildServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'repo' in name:
-      vm_node.labels.add("RepoServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'knife' in name:
-      vm_node.labels.add("KnifeServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'vagrant' in name:
-      vm_node.labels.add("VagrantServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'sayum' in name and 'db' in name:
-      vm_node.labels.add("AuthDBServer")
-   # new style naming   
-   if 'app' in name:
-      #print('name: %s' % name)
-      vm_node.labels.add("AppServer")
-      vm_node.labels.add("%sServer" % vm_node['system'])
-   if 'aut' in name:
-      vm_node.labels.add("AuthServer")
-   if 'bat' in name:
-      vm_node.labels.add("BatchServer")
-   if 'bld' in name:
-      vm_node.labels.add("BuildServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'cas' in name:
-      vm_node.labels.add("DBServer")
-      vm_node.labels.add("CassandraDB")
-   if 'chf' in name:
-      vm_node.labels.add("ChefServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'dis' in name:
-      vm_node.labels.add("DiscServer")
-   if 'doc' in name:
-      vm_node.labels.add("DocServer")
-   if 'els' in name:
-      vm_node.labels.add("DBServer")
-      vm_node.labels.add("ElasticDB")
-   if 'gtw' in name:
-      vm_node.labels.add("GatewayServer")
-   if 'knf' in name:
-      vm_node.labels.add("KnifeServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'lic' in name:
-      vm_node.labels.add("LicenseServer")
-   if 'mng' in name:
-      vm_node.labels.add("DBServer")
-      vm_node.labels.add("MongoDB")
-   if 'mon' in name and not 'mongo' in name:
-      vm_node.labels.add("DBMonitor")
-   if 'rep' in name:
-      vm_node.labels.add("RepoServer")
-      vm_node.labels.add("DevOpsServer")
-   if 'rmq' in name:
-      vm_node.labels.add("QServer")
-      SetupQueues(vm_node)
-   if 'tim' in name:
-      vm_node.labels.add("TimeServer")
-   if 'utl' in name:
-      vm_node.labels.add("UtilityServer")
-   if 'vgt' in name:
-      vm_node.labels.add("VagrantServer")
-      vm_node.labels.add("DevOpsServer")
-      
-   vm_node.push()
-   
-   # Attach VM to VM Cluster
-   results = graph.create_unique(Relationship(vm_node, "RUNS_ON", vm_cluster_node))
+      if 'queue' in name:
+         vm_node.labels.add("QServer")
+         SetupQueues(vm_node)
+            
+      if 'mongo' in name:
+         vm_node.labels.add("DBServer")
+         vm_node.labels.add("MongoDB")
+            
+      if 'elast' in name:
+         vm_node.labels.add("DBServer")
+         vm_node.labels.add("ElasticDB")
+            
+      if 'time' in name:
+         vm_node.labels.add("TimeServer")
+      if 'gw' in name:
+         vm_node.labels.add("GatewayServer")
+            
+      if 'dbsrv' in name:
+         vm_node.labels.add("DBServer")
+            
+      if 'monitor' in name:
+         vm_node.labels.add("DBMonitor")
+      if 'chef' in name:
+         vm_node.labels.add("ChefServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'build' in name:
+         vm_node.labels.add("BuildServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'repo' in name:
+         vm_node.labels.add("RepoServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'knife' in name:
+         vm_node.labels.add("KnifeServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'vagrant' in name:
+         vm_node.labels.add("VagrantServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'sayum' in name and 'db' in name:
+         vm_node.labels.add("AuthDBServer")
+      # new style naming   
+      if 'app' in name:
+         #print('name: %s' % name)
+         vm_node.labels.add("AppServer")
+         vm_node.labels.add("%sServer" % vm_node['system'])
+      if 'aut' in name:
+         vm_node.labels.add("AuthServer")
+      if 'bat' in name:
+         vm_node.labels.add("BatchServer")
+      if 'bld' in name:
+         vm_node.labels.add("BuildServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'cas' in name:
+         vm_node.labels.add("DBServer")
+         vm_node.labels.add("CassandraDB")
+      if 'chf' in name:
+         vm_node.labels.add("ChefServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'dis' in name:
+         vm_node.labels.add("DiscServer")
+      if 'doc' in name:
+         vm_node.labels.add("DocServer")
+      if 'els' in name:
+         vm_node.labels.add("DBServer")
+         vm_node.labels.add("ElasticDB")
+      if 'gtw' in name:
+         vm_node.labels.add("GatewayServer")
+      if 'knf' in name:
+         vm_node.labels.add("KnifeServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'lic' in name:
+         vm_node.labels.add("LicenseServer")
+      if 'mng' in name:
+         vm_node.labels.add("DBServer")
+         vm_node.labels.add("MongoDB")
+      if 'mon' in name and not 'mongo' in name:
+         vm_node.labels.add("DBMonitor")
+      if 'rep' in name:
+         vm_node.labels.add("RepoServer")
+         vm_node.labels.add("DevOpsServer")
+      if 'rmq' in name:
+         vm_node.labels.add("QServer")
+         SetupQueues(vm_node)
+      if 'tim' in name:
+         vm_node.labels.add("TimeServer")
+      if 'utl' in name:
+         vm_node.labels.add("UtilityServer")
+      if 'vgt' in name:
+         vm_node.labels.add("VagrantServer")
+         vm_node.labels.add("DevOpsServer")
+               
+      vm_node.push()
+            
+      # Attach VM to VM Cluster
+      results = graph.create_unique(Relationship(vm_node, "RUNS_ON", vm_cluster_node))
                                       
 def WriteQueueInfo(qmgr_node, queue, routing_key):
    #print('getallvmsEnviron.py - Writing Queue Info')
@@ -331,9 +340,9 @@ def ReadVMs():
       if hasattr(child, 'vmFolder'):
                   datacenter = child
                   vmFolder = datacenter.vmFolder
+                  #print('ReadVMS - VM Folder: %s' % vmFolder.name)
                   vmList = vmFolder.childEntity
                   for vm in vmList:
-                     
                      WriteVmInfo(vm)
    
    return 0
