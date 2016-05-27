@@ -1,122 +1,77 @@
-// MERGE PAS
-MERGE (pas:Domain {
-			name:'PAS',
-			status: 'UP',
-			system: 'PAS'
-		})
+//
+MERGE (pas:Domain {	name:'PAS'	})
 
-// MERGE CRM
-MERGE (crm:Domain {
-			name:'CRM',
-			status: 'UP',
-			system: 'CRM'
-		})
-// MERGE Client
-MERGE (client:Domain {
-			name:'Client',
-			status: 'UP',
-			system: 'Client'
-		})
-// MERGE Billing
-MERGE (billing:Domain {
-			name:'Billing',
-			status: 'UP',
-			system: 'Billing'
-		})
-// MERGE Actuarial
-MERGE (actuarial:Domain {
-			name:'Actuarial',
-			status: 'UP',
-			system: 'Actuarial'
-		})
-// MERGE Ratabase
-MERGE (ratabase:Domain {
-			name:'Ratabase',
-			status: 'UP',
-			system: 'Ratabase'
-		})
-// MERGE Marketing Automation
-MERGE (marketing:Domain {
-			name:'MarketingAutomation',
-			status: 'UP',
-			system: 'MarketingAutomation'
-		})
-// MERGE Document Management
-MERGE (doc:Domain {
-			name:'DocumentMGMT',
-			status: 'UP',
-			system: 'DocMgmnt'
-		})
-// MERGE User Management
-MERGE (um:Domain {
-			name:'UserMGMT',
-			status: 'UP',
-			system: 'UserMgmnt'
-		})
-// MERGE Claims
-MERGE (claims:Domain {
-			name:'Claims',
-			status: 'UP',
-			system: 'Claims'
-		})
-// MERGE BI
-MERGE (bi:Domain {
-			name:'BI',
-			status: 'UP',
-			system: 'BI'
-		})
-// MERGE Reporting
-MERGE (reporting:Domain {
-			name:'Reporting',
-			status: 'UP',
-			system: 'Reporting'
-		})
-// MERGE Front End
-MERGE (web:Domain {
-			name:'FrontEnd',
-			status: 'UP',
-			system: 'FrontEnd'
-		})
+MERGE (crm:Domain {	name:'CRM'})
+
+MERGE (client:Domain {	name:'Client'})
+
+MERGE (billing:Domain {	name:'Billing'})
+
+MERGE (actuarial:Domain {name:'Actuarial'})
+
+MERGE (accounting:Domain {name:'Accounting'})
+
+MERGE (ratabase:Domain {name:'Ratabase'})
+
+MERGE (marketing:Domain {name:'MarketingAutomation'	})
+
+MERGE (doc:Domain {name:'DocMgmnt'})
+
+//MERGE (um:Domain {name:'UserMgmnt'})
+
+MERGE (claims:Domain {name:'Claims'})
+
+MERGE (bi:Domain {name:'BI'})
+
+MERGE (reporting:Domain {name:'Reporting'})
+
+MERGE (web:Domain {name:'CustFrontEnd'})
+
+MERGE (howeb:Domain {name:'HOFrontEnd'})
 				
 // Connect CRM to Marketing Automation
 MERGE (crm)-[:CONNECTS_TO]->(marketing)
-// Connect PAS to Ratabase
+
 MERGE (pas)-[:NEEDS]->(ratabase)
-// Connect PAS to Claims
-MERGE (pas)-[:CONNECTS_TO]->(claims)
-// Connect PAS to BI
 MERGE (pas)-[:CONNECTS_TO]->(bi)
-// Connect PAS to Reporting
 MERGE (pas)-[:CONNECTS_TO]->(reporting)
-// Connect PAS to CRM
 MERGE (pas)-[:CONNECTS_TO]->(crm)
-// Connect PAS to Actuarial
 MERGE (pas)-[:CONNECTS_TO]->(actuarial)
-// Connect PAS to Billing
+MERGE (pas)-[:CONNECTS_TO]->(accounting)
 MERGE (pas)-[:NEEDS]->(billing)
-// Connect PAS to User Mgmnt
-MERGE (pas)-[:NEEDS]->(um)
-// Connect PAS to Document Mgmnt
-MERGE (pas)-[:NEEDS]->(doc)
-// Connect Doc Mgmnt to Marketing Automation
-MERGE (doc)-[:CONNECTS_TO]->(marketing)
-// Connect Claims to Document Mgmnt
-MERGE (claims)-[:NEEDS]->(doc)
-// Connect Billing to Document Mgmnt
-MERGE (billing)-[:NEEDS]->(doc)
-// Connect CRM to Document Mgmnt
-MERGE (crm)-[:NEEDS]->(doc)
-// Connect Frontend to Pol Admin
-MERGE (web)-[:NEEDS]->(pas)
-// Connect Frontend to Document Mgmnt
-MERGE (web)-[:NEEDS]->(doc)
-// Connect Frontend to Billing
-MERGE (web)-[:NEEDS]->(billing)
-// Connect Frontend to Client
-MERGE (web)-[:NEEDS]->(client)
-// Connect Pol Admin to Client
+//MERGE (pas)-[:NEEDS]->(um)
+MERGE (pas)-[:CONNECTS_TO]->(doc)
 MERGE (pas)-[:NEEDS]->(client)
-// Connect Pol Admin to Client
-MERGE (billing)-[:NEEDS]->(client)
-// Connect CRM to client
+
+MERGE (doc)-[:CONNECTS_TO]->(marketing)
+
+MERGE (claims)-[:NEEDS]->(doc)
+MERGE (claims)-[:NEEDS]->(client)
+MERGE (claims)-[:NEEDS]->(pas)
+MERGE (claims)-[:CONNECTS_TO]->(accounting)
+MERGE (claims)-[:CONNECTS_TO]->(actuarial)
+
+MERGE (billing)-[:CONNECTS_TO]->(accounting)
+MERGE (billing)-[:CONNECTS_TO]->(bi)
+MERGE (billing)-[:CONNECTS_TO]->(crm)
+MERGE (billing)-[:CONNECTS_TO]->(doc)
+
+MERGE (crm)-[:NEEDS]->(doc)
 MERGE (crm)-[:NEEDS]->(client)
+MERGE (crm)-[:NEEDS]->(claims)
+
+MERGE (web)-[:NEEDS]->(pas)
+MERGE (web)-[:NEEDS]->(doc)
+MERGE (web)-[:NEEDS]->(billing)
+MERGE (web)-[:NEEDS]->(client)
+//MERGE (web)-[:NEEDS]->(um)
+MERGE (web)-[:NEEDS]->(claims)
+
+MERGE (howeb)-[:NEEDS]->(pas)
+MERGE (howeb)-[:NEEDS]->(doc)
+MERGE (howeb)-[:NEEDS]->(billing)
+MERGE (howeb)-[:NEEDS]->(client)
+
+MERGE (billing)-[:NEEDS]->(client)
+
+MERGE (crm)-[:NEEDS]->(claims)

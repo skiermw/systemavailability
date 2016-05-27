@@ -6,7 +6,9 @@ import json
 from pprint import pprint
 import urllib2
 
-url = 'http://dctestappsrv1:8083/api/resource.json'
+#url = 'http://dctestappsrv1:8083/api/resource.json'
+url = 'http://test.api.sayinsurance.com/:8083/api/resource.json'
+
 response = urllib2.urlopen(url).read()
 
 print 'error: %s' % urllib2.URLError
