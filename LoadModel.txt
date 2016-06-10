@@ -1,0 +1,104 @@
+//  LoadModel.txt
+MERGE (pasapp:Server {	name:'PASApp' })
+
+MERGE (paselsdb:Server {	name:'PASElastisearchDB' })
+MERGE (pascasdb:Server {	name:'PASCassandraDB' })
+MERGE (pasmondb:Server {	name:'PASMongoDB' })
+MERGE (pasbat:Server {	name:'PASEBatchSrv' })
+
+MERGE (pasdbmon:Server {	name:'PASDBMonitor' })
+
+MERGE (paschef:Server {	name:'PASChef' })
+MERGE (pasknife:Server {	name:'PASKnife' })
+MERGE (pasvagrant:Server {	name:'PASVagrant' })
+MERGE (rtg18:DB2 {	name:'RTG18' })
+
+// Queues
+MERGE (boprem:Queue {	name:'BackOfficePrem' })
+MERGE (boerr:Queue {	name:'BackOfficeError' })
+MERGE (reporting:Queue {	name:'ReportingPolicy' })
+
+// Program level servers
+MERGE (sayrmq:Server {	name:'SayRabbitMQ' })
+MERGE (graylog:Server {	name:'GrayLog' })
+
+// Client
+MERGE (eureka:Server {	name:'SayEureka' })
+MERGE (clientdb:Server {  name:'ClientDB' })
+MERGE (client:Server {  name:'ClientApp' })
+MERGE (auth:Server {  name:'AuthApp' })
+MERGE (authdb:Server {  name:'AuthDB' })
+MERGE (gateway:Server {  name:'Gateway' })
+MERGE (telephony:Server {  name:'Telephony' })
+MERGE (hofe:Server {  name:'HOFrontEnd' })
+MERGE (umweb:Server {  name:'UserMgmntWeb' })
+MERGE (crm:Server {  name:'CRMListener' })
+
+// Billing
+MERGE (billing:Server {  name:'BillingApp' })
+MERGE (billingmisc:Server {  name:'BillingMisc' })
+MERGE (wallet:Server {  name:'WalletApp' })
+MERGE (majesco:Server {  name:'MajescoApp' })
+MERGE (majescodb:Server {  name:'MajescoDB' })
+MERGE (pay:Server {  name:'PayServer' })
+MERGE (bluepay:ExtService {  name:'BluePay' })
+MERGE (paytbl:DB2 {  name:'PayTable????' })
+
+// External Services
+MERGE (smarty:ExtService {	name:'SmartyStreets' })
+MERGE (lexis:ExtService {	name:'LexisNexis' })
+
+// Customer Frontend
+MERGE (craft:Server {  name:'CraftCMS' })
+MERGE (craftdb:Server {  name:'CraftDB' })
+MERGE (vpn:VPN {  name:'VPN' })
+
+// Document Management
+MERGE (docmgmnt:Server {  name:'DocMgmntApp' })
+
+// Connect Customer Frontend CALLS
+MERGE (craft)-[:CALLS]->(craftdb)
+MERGE (craft)-[:CALLS]->(billing)
+MERGE (craft)-[:CALLS]->(wallet)
+MERGE (craft)-[:CALLS]->(billing)
+MERGE (craft)-[:CALLS]->(auth)
+MERGE (craft)-[:CALLS]->(telephony)
+MERGE (craft)-[:CALLS]->(docmgmnt)
+MERGE (craft)-[:NEEDS]->(gateway)
+MERGE (craft)-[:NEEDS]->(vpn)
+
+// Connect PAS CALLS
+MERGE (pasapp)-[:CALLS]->(paselsdb)
+MERGE (pasapp)-[:CALLS]->(pascasdb)
+MERGE (pasapp)-[:CALLS]->(pasmondb)
+MERGE (pasapp)-[:CALLS]->(pasbat)
+MERGE (pasapp)-[:CALLS]->(client)
+MERGE (pasapp)-[:CALLS]->(ratabase)
+MERGE (pasapp)-[:CALLS]->(billing)
+MERGE (pasapp)-[:CALLS]->(wallet)
+MERGE (pasapp)-[:CALLS]->(auth)
+MERGE (pasapp)-[:CALLS]->(graylog)
+MERGE (pasapp)-[:CALLS]->(smarty)
+MERGE (pasapp)-[:CALLS]->(lexis)
+
+MERGE (pasapp)-[:NEEDS]->(sayrmq)
+MERGE (pasapp)-[:NEEDS]->(paschef)
+MERGE (pasapp)-[:NEEDS]->(pasknife)
+MERGE (pasapp)-[:NEEDS]->(pasvagrant)
+MERGE (pasapp)-[:NEEDS]->(eureka)
+MERGE (pasapp)-[:NEEDS]->(rtg18)
+MERGE (pascasdb)-[:NEEDS]->(pasdbmon)
+
+// Connect Billing CALLS
+MERGE (billing)-[:CALLS]->(majesco)
+MERGE (majesco)-[:CALLS]->(majescodb)
+MERGE (wallet)-[:CALLS]->(pay)
+MERGE (pay)-[:CALLS]->(bluepay)
+MERGE (wallet)-[:CALLS]->(billing)
+MERGE (wallet)-[:CALLS]->(paytbl)
+
+// Connect Client CALLS
+MERGE (client)-[:CALLS]->(clientdb)
+MERGE (auth)-[:CALLS]->(authdb)
+MERGE (hofe)-[:CALLS]->(pasapp)
+MERGE (hofe)-[:NEEDS]->(craft)
