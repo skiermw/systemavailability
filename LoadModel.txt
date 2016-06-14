@@ -1,60 +1,69 @@
 //  LoadModel.txt
-MERGE (pasapp:Server {	name:'PASApp' })
+MERGE (pasapp:Server {	name:'PASApp', domain:'PAS' })
 
-MERGE (paselsdb:Server {	name:'PASElastisearchDB' })
-MERGE (pascasdb:Server {	name:'PASCassandraDB' })
-MERGE (pasmondb:Server {	name:'PASMongoDB' })
+MERGE (paselsdb:Server {	name:'PASElastisearchDB', domain:'PAS' })
+MERGE (pascasdb:Server {	name:'PASCassandraDB', domain:'PAS' })
+MERGE (pasmondb:Server {	name:'PASMongoDB', domain:'PAS' })
 MERGE (pasbat:Server {	name:'PASEBatchSrv' })
 
-MERGE (pasdbmon:Server {	name:'PASDBMonitor' })
+MERGE (pasdbmon:Server {	name:'PASDBMonitor', domain:'PAS' })
 
-MERGE (paschef:Server {	name:'PASChef' })
-MERGE (pasknife:Server {	name:'PASKnife' })
-MERGE (pasvagrant:Server {	name:'PASVagrant' })
+MERGE (paschef:Server {	name:'PASChef', domain:'PAS' })
+MERGE (pasknife:Server {	name:'PASKnife', domain:'PAS' })
+MERGE (pasvagrant:Server {	name:'PASVagrant', domain:'PAS' })
 MERGE (rtg18:DB2 {	name:'RTG18' })
 
 // Queues
 MERGE (boprem:Queue {	name:'BackOfficePrem' })
 MERGE (boerr:Queue {	name:'BackOfficeError' })
 MERGE (reporting:Queue {	name:'ReportingPolicy' })
+MERGE (crmq:Queue {	name:'CRM??' })
+MERGE (claimscharge:Queue {	name:'ClaimsChargeability' })
+MERGE (claimspol:Queue {	name:'ClaimsPolicy' })
+MERGE (claimsbatch:Queue {	name:'ClaimsPolBatch' })
 
 // Program level servers
-MERGE (sayrmq:Server {	name:'SayRabbitMQ' })
-MERGE (graylog:Server {	name:'GrayLog' })
+MERGE (sayrmq:Server {	name:'SayRabbitMQ', domain:'PAS' })
+MERGE (graylog:Server {	name:'GrayLog', domain:'DeliveryTeam' })
+MERGE (mailserver:Server {	name:'ShelterMail', domain:'LotusNotes' })
 
 // Client
-MERGE (eureka:Server {	name:'SayEureka' })
-MERGE (clientdb:Server {  name:'ClientDB' })
-MERGE (client:Server {  name:'ClientApp' })
-MERGE (auth:Server {  name:'AuthApp' })
-MERGE (authdb:Server {  name:'AuthDB' })
-MERGE (gateway:Server {  name:'Gateway' })
-MERGE (telephony:Server {  name:'Telephony' })
-MERGE (hofe:Server {  name:'HOFrontEnd' })
-MERGE (umweb:Server {  name:'UserMgmntWeb' })
-MERGE (crm:Server {  name:'CRMListener' })
+MERGE (eureka:Server {	name:'SayEureka', domain:'UserMgmnt' })
+MERGE (clientdb:Server {  name:'ClientDB', domain:'UserMgmnt' })
+MERGE (client:Server {  name:'ClientApp', domain:'UserMgmnt' })
+MERGE (auth:Server {  name:'AuthApp', domain:'UserMgmnt' })
+MERGE (authdb:Server {  name:'AuthDB', domain:'UserMgmnt' })
+MERGE (gateway:Server {  name:'Gateway', domain:'UserMgmnt' })
+MERGE (telephony:Server {  name:'Telephony', domain:'UserMgmnt' })
+MERGE (hofe:Server {  name:'HOFrontEnd', domain:'UserMgmnt' })
+MERGE (umweb:Server {  name:'UserMgmntWeb', domain:'UserMgmnt' })
+MERGE (crm:Server {  name:'CRMListener', domain:'UserMgmnt' })
 
 // Billing
-MERGE (billing:Server {  name:'BillingApp' })
-MERGE (billingmisc:Server {  name:'BillingMisc' })
-MERGE (wallet:Server {  name:'WalletApp' })
-MERGE (majesco:Server {  name:'MajescoApp' })
-MERGE (majescodb:Server {  name:'MajescoDB' })
-MERGE (pay:Server {  name:'PayServer' })
-MERGE (bluepay:ExtService {  name:'BluePay' })
-MERGE (paytbl:DB2 {  name:'PayTable????' })
+MERGE (billing:Server {  name:'BillingApp', domain:'Billing' })
+MERGE (billingmisc:Server {  name:'BillingMisc', domain:'Billing' })
+MERGE (wallet:Server {  name:'WalletApp', domain:'Billing' })
+MERGE (majesco:Server {  name:'MajescoApp', domain:'Billing' })
+MERGE (majescodb:Server {  name:'MajescoDB', domain:'Billing' })
+MERGE (pay:Server {  name:'PayServer', domain:'Billing' })
+MERGE (bluepay:ExtService {  name:'BluePay', domain:'Billing' })
+MERGE (paytbl:DB2 {  name:'DPAY01', domain:'Billing' })
 
 // External Services
 MERGE (smarty:ExtService {	name:'SmartyStreets' })
 MERGE (lexis:ExtService {	name:'LexisNexis' })
 
 // Customer Frontend
-MERGE (craft:Server {  name:'CraftCMS' })
-MERGE (craftdb:Server {  name:'CraftDB' })
-MERGE (vpn:VPN {  name:'VPN' })
+MERGE (craft:Server {  name:'CraftCMS', domain:'CustomerFE' })
+MERGE (craftdb:Server {  name:'CraftDB', domain:'CustomerFE' })
+MERGE (vpn:VPN {  name:'VPN', domain:'CustomerFE' })
+MERGE (aws:ExtService {	name:'AmazonWebServices' })
 
 // Document Management
-MERGE (docmgmnt:Server {  name:'DocMgmntApp' })
+MERGE (docmgmnt:Server {  name:'DocMgmntApp', domain:'DocMgmnt' })
+
+// BI
+MERGE (hadoop:Server {  name:'Hadoop', domain:'BI' })
 
 // Connect Customer Frontend CALLS
 MERGE (craft)-[:CALLS]->(craftdb)
@@ -64,8 +73,11 @@ MERGE (craft)-[:CALLS]->(billing)
 MERGE (craft)-[:CALLS]->(auth)
 MERGE (craft)-[:CALLS]->(telephony)
 MERGE (craft)-[:CALLS]->(docmgmnt)
+MERGE (craft)-[:CALLS]->(mailserver)
 MERGE (craft)-[:NEEDS]->(gateway)
 MERGE (craft)-[:NEEDS]->(vpn)
+MERGE (craft)-[:NEEDS]->(crmq)
+MERGE (craft)-[:NEEDS]->(aws)
 
 // Connect PAS CALLS
 MERGE (pasapp)-[:CALLS]->(paselsdb)
@@ -83,6 +95,10 @@ MERGE (pasapp)-[:CALLS]->(lexis)
 MERGE (pasapp)-[:CALLS]->(boprem)
 MERGE (pasapp)-[:CALLS]->(boerr)
 MERGE (pasapp)-[:CALLS]->(reporting)
+MERGE (pasapp)-[:CALLS]->(claimspol)
+MERGE (pasapp)-[:CALLS]->(claimsbatch)
+MERGE (pasapp)-[:CALLS]->(claimscharge)
+
 
 MERGE (pasapp)-[:NEEDS]->(sayrmq)
 MERGE (pasapp)-[:NEEDS]->(paschef)
